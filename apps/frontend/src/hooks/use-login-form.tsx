@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 //Schéma Formu
 export const loginFormSchema = z.object({
-  username: z.string().min(2, { message: "Username must be at least 2 characters." }),
+  email: z.string().min(2, { message: "Username must be at least 2 characters." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
 });
 
@@ -13,7 +13,7 @@ export function useLoginForm(onSubmit: (data: LoginFormValues) => void) {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });

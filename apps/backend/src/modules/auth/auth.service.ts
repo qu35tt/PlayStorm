@@ -2,10 +2,11 @@ import { Injectable, InternalServerErrorException, NotFoundException, Unauthoriz
 import { LoginDto, LogoutDto, RegisterDto } from './dto';
 import { PrismaService } from "src/prisma/prisma.service";
 const argon = require('argon2');
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-    constructor(private prisma: PrismaService) {}
+    constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
     async register(dto: RegisterDto){
         try{
@@ -38,10 +39,18 @@ export class AuthService {
 
             if(!await argon.verify(user?.password, dto.password)) { throw new UnauthorizedException("Invalid credentials") }
 
-            return user;
+            const payload = { sub: user.id, username: user.username };
+
+            const access_token = await this.jwt.signAsync(payload);
+
+            const id = user.id
+
+            return { id, access_token };
         }
         catch(err){
+            console.log(err)
             throw new InternalServerErrorException(err)
+            
         }
     }
 
