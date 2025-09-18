@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { LoginDto, LogoutDto, RegisterDto } from './dto';
 import { PrismaService } from "src/prisma/prisma.service";
 const argon = require('argon2');
