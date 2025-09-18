@@ -1,4 +1,4 @@
-import { useLoginForm } from "../hooks/use-login-form";
+import { useRegisterForm } from "../hooks/use-register-form";
 import axios from "axios";
 import { useNavigate } from "react-router";
 
@@ -14,15 +14,16 @@ import {
 import { Input } from "@/components/ui/input"
 import { useUserStore } from '../stores/userStore'
 
-export function LoginForm({stateChanger}: any) {
+export function RegisterForm({stateChanger}: any) {
     const user = useUserStore()
     const nav = useNavigate();
 
-    const { form, handleSubmit } = useLoginForm(async (data) => {
+    const { form, handleSubmit } = useRegisterForm(async (data) => {
         try{
-            await axios.post(`${import.meta.env.VITE_API_URL}auth/login`, {
+            await axios.post(`${import.meta.env.VITE_API_URL}auth/register`, {
                 email: data.email,
-                password: data.password
+                password: data.password,
+                username: data.username
             })
             .then(function (response){
                 user.setId(response.data.id);
@@ -42,9 +43,22 @@ export function LoginForm({stateChanger}: any) {
     return (
         <div className="flex justify-center items-center p-0 m-0 z-50">
             <div className="bg-[#1F2A3A] w-[35rem] h-[40rem]">
-                <div className="text-6xl font-extrabold h-[10rem] flex justify-start items-center mx-[4rem] animate-fadein">Sign In</div>
+                <div className="text-6xl font-extrabold h-[10rem] flex justify-start items-center mx-[4rem] animate-fadein">Sign Up</div>
                 <Form {...form}>
                     <form onSubmit={handleSubmit} className="space-y-6 px-[4rem] flex flex-col">
+                        <FormField
+                            control={form.control}
+                            name="username"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel className="text-2xl">Username</FormLabel>
+                                    <FormControl>
+                                        <Input className="bg-[#273444] h-[3rem]" placeholder="Enter Username..." {...field}/>
+                                    </FormControl>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
                         <FormField
                             control={form.control}
                             name="email"
@@ -52,7 +66,7 @@ export function LoginForm({stateChanger}: any) {
                                 <FormItem>
                                     <FormLabel className="text-2xl">Email</FormLabel>
                                     <FormControl>
-                                        <Input className="bg-[#273444] h-[3rem]" placeholder="Enter Username..." {...field}/>
+                                        <Input className="bg-[#273444] h-[3rem]" placeholder="Enter Email..." {...field}/>
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
@@ -71,10 +85,9 @@ export function LoginForm({stateChanger}: any) {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className="bg-[#FF6B35] text-2xl w-[10rem] h-[4rem] mx-auto cursor-pointer">Log In!</Button>
+                        <Button type="submit" className="bg-[#FF6B35] text-2xl w-[10rem] h-[4rem] mx-auto cursor-pointer">Register!</Button>
 
-                        <a className="mx-auto text-xl font-semibold text-[#00C9D6] cursor-pointer hover:underline">Zapomenuté heslo?</a>
-                        <div className="mx-auto text-xl font-semibold cursor-default">Nemáte jěště účet? <a className="text-[#00C9D6] cursor-pointer hover:underline" onClick={() => stateChanger(false)}>Vytvořit účet?</a></div>
+                        <div className="mx-auto text-xl font-semibold cursor-default">Již máte účet? <a className="text-[#00C9D6] cursor-pointer hover:underline" onClick={() => stateChanger(true)}>Přihlásit se!</a></div>
                     </form>
                 </Form>
             </div>
