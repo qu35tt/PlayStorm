@@ -1,4 +1,5 @@
 import { useLoginForm } from "../hooks/use-login-form";
+import axios from "axios";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -10,11 +11,30 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useUserStore } from '../stores/userStore'
 
 export function LoginForm() {
+    const user = useUserStore()
 
-    const { form, handleSubmit } = useLoginForm((data) => {
+    const { form, handleSubmit } = useLoginForm(async (data) => {
         console.log(data);
+
+        try{
+            axios.post(`${import.meta.env.VITE_API_URL}auth/login`, {
+                email: data.email,
+                password: data.password
+            })
+            .then(function (response){
+                user.setId(response.data.id)
+                user.setToken(response.data.access_token)
+            })
+            .catch(function (err){
+                console.error(err)
+            })
+        } 
+        catch(err){
+            console.log(err)
+        }
     });
 
     return (
@@ -25,10 +45,10 @@ export function LoginForm() {
                     <form onSubmit={handleSubmit} className="space-y-6 px-[4rem] flex flex-col">
                         <FormField
                             control={form.control}
-                            name="username"
+                            name="email"
                             render={({field}) => (
                                 <FormItem>
-                                    <FormLabel className="text-2xl">Username</FormLabel>
+                                    <FormLabel className="text-2xl">Email</FormLabel>
                                     <FormControl>
                                         <Input className="bg-[#273444] h-[3rem]" placeholder="Enter Username..." {...field}/>
                                     </FormControl>
