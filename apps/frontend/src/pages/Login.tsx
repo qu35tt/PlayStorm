@@ -1,6 +1,10 @@
+import { useState } from "react"
 import { LoginForm } from "../components/LoginForm"
+import { RegisterForm } from "@/components/RegisterForm";
 
 export function Login() {
+    const[isLogging, setIsLogging] = useState(true);
+
     return(
         <div className="w-screen h-screen relative">
             <img
@@ -9,7 +13,11 @@ export function Login() {
                 alt="Logo"
             />
             <div className="absolute inset-0 flex items-center justify-center z-20">
-                <LoginForm />
+                {isLogging ? 
+                    <LoginForm stateChanger={setIsLogging}/>
+                    :
+                    <RegisterForm stateChanger={setIsLogging}/>
+                }
             </div>
         </div>
     )
