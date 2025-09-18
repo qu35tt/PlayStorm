@@ -1,5 +1,6 @@
 import { useLoginForm } from "../hooks/use-login-form";
 import axios from "axios";
+import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,18 +16,19 @@ import { useUserStore } from '../stores/userStore'
 
 export function LoginForm() {
     const user = useUserStore()
+    const nav = useNavigate();
 
     const { form, handleSubmit } = useLoginForm(async (data) => {
-        console.log(data);
-
         try{
             axios.post(`${import.meta.env.VITE_API_URL}auth/login`, {
                 email: data.email,
                 password: data.password
             })
             .then(function (response){
-                user.setId(response.data.id)
-                user.setToken(response.data.access_token)
+                user.setId(response.data.id);
+                user.setToken(response.data.access_token);
+
+                nav("/home");
             })
             .catch(function (err){
                 console.error(err)
