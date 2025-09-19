@@ -14,6 +14,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { useUserStore } from '../stores/userStore'
 
+import { toast } from "sonner"
+
 export function LoginForm({stateChanger}: any) {
     const user = useUserStore()
     const nav = useNavigate();
@@ -32,10 +34,12 @@ export function LoginForm({stateChanger}: any) {
             })
             .catch(function (err){
                 console.error(err)
+                toast.error("Špatné přihlašovací údaje!", {duration: 2000});
             })
         } 
         catch(err){
             console.log(err)
+            toast.error("Špatné přihlašovací údaje!", {duration: 2000});
         }
     });
 
