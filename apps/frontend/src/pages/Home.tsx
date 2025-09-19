@@ -1,5 +1,9 @@
+import { Navbar } from "../components/Navbar"
+
 export function Home() {
     return(
-        <h1>Main Page</h1>
+        <div className="w-screen h-screen relative">
+            <Navbar />
+        </div>
     )
 }
