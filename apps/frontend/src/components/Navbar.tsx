@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DropdownMenuLabel, DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 
 export function Navbar() {
     const nav = useNavigate();
@@ -54,10 +55,27 @@ export function Navbar() {
                 <div className="font-extrabold cursor-pointer">Films</div>
                 <div className="font-extrabold cursor-pointer">Series</div>
             </div>
-            <div className="w-[20rem] h-full flex justify-center items-center focus:outline-0 ">
+            <div className="w-[20rem] h-full flex justify-center items-center focus:outline-0 px-2">
                 <DropdownMenu>
-                    <DropdownMenuTrigger><User className="w-[4rem] h-[4rem] cursor-pointer" /></DropdownMenuTrigger>
-                        <DropdownMenuContent>
+                    <DropdownMenuTrigger>
+                        <img
+                            src="/profile-placeholder.png"
+                            alt="Profile"
+                            className="w-24 h-24 rounded-full border border-gray-300"
+                        />
+                    </DropdownMenuTrigger>
+                        <DropdownMenuContent className="p-3">
+                              <DropdownMenuLabel>
+                                <div className="flex items-center gap-3 py-2">
+                                <img
+                                    src="/profile-placeholder.png"
+                                    alt="Profile"
+                                    className="w-16 h-16 rounded-full border border-gray-300"
+                                />
+                                <span className="font-semibold text-lg">{"Username"}</span>
+                                </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator/>
                             <DropdownMenuItem>Profile <User className="h-4 w-4 ml-auto"/></DropdownMenuItem>
                             <DropdownMenuItem>Settings <Settings className="h-4 w-4 ml-auto"/></DropdownMenuItem>
                             <DropdownMenuItem className="text-red-800" onClick={() => handleLogout()}>Logout <LogOut className="h-4 w-4 ml-auto text-red-800"/></DropdownMenuItem>
