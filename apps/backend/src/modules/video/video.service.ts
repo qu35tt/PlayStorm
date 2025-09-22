@@ -9,7 +9,14 @@ export class VideoService {
     getVideos() {
         try{
             const videos = this.prisma.video.findMany({
-                take: 40
+                take: 40,
+                select: {
+                    id: true,
+                    name: true,
+                    length: true,
+                    thumbnail: true,
+                    URL: false
+                }
             })
 
             return videos;
