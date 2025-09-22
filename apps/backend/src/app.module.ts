@@ -5,10 +5,11 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { EventsGateway } from './gateways/events.gateway';
+import { VideoModule } from './modules/video/video.module';
 
 @Module({
-  imports: [AuthModule, UserModule, PrismaModule],
-  controllers: [AppController, ],
+  imports: [VideoModule ,AuthModule, UserModule, PrismaModule],
+  controllers: [AppController],
   providers: [AppService, EventsGateway],
 })
 export class AppModule {}
