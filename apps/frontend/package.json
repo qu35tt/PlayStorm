@@ -16,9 +16,11 @@
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.13",
+    "@vidstack/react": "^1.12.13",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dashjs": "^5.0.3",
     "lucide-react": "^0.544.0",
     "next-themes": "^0.4.6",
     "react": "^19.1.1",
@@ -44,7 +46,6 @@
     "tw-animate-css": "^1.3.8",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
-    "video.js": "^8.23.4",
     "vite": "^7.1.2"
   }
 }
