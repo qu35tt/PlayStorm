@@ -21,7 +21,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "/watch", // or just "/watch"
+    path: "/watch/:id", // or just "/watch"
     element: <VideoPlayer />
   }
 ]);

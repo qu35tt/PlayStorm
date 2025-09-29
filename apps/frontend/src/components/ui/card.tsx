@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router"
+
 type VideoData = {
     id: string
     name: string
@@ -6,8 +8,13 @@ type VideoData = {
 }
 
 export function Card(videoData: VideoData){
+    const nav = useNavigate()
+    function handleClick(){
+        nav(`/watch/${videoData.id}`)
+    }
+
     return (
-        <div className="w-[30rem] h-[20rem] bg-black m-8 snap-center snap-always object-scale-down">
+        <div className="w-[30rem] h-[20rem] bg-black m-8 snap-center snap-always object-scale- cursor-pointer hover:scale-108" onClick={handleClick}>
             <img
                 src={videoData.thumbnail}
                 className="w-full h-full p-6 object-contain z-10 block"
