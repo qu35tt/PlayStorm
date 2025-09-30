@@ -13,7 +13,7 @@ export function VideoControls({ name }: VideoControlsProps) {
     return (
         <>
         
-            <Controls.Root className="data-[visible]:opacity-100 absolute bottom-0 left-0 z-10 w-full h-[5rem] flex flex-col bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity pointer-events-none">
+            <Controls.Root className="data-[visible]:opacity-100 absolute bottom-0 left-0 z-10 w-full h-[5rem] flex flex-col bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity pointer-events-none text-white">
                 <Controls.Group className="pointer-events-auto w-full flex items-center px-4 py-2 gap-4">
                     <PlayButton className="group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4">
                         {isPaused ? <Play className='w-8 h-8'/> : <Pause className='w-8 h-8'/>}

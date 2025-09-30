@@ -11,10 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DropdownMenuLabel, DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
+import { useEffect } from "react";
+import { useUser } from "@/context/user-context";
 
 export function Navbar() {
     const nav = useNavigate();
     const user = useUserStore()
+
+    const { userCredentials, setUser, clearUser }= useUser();
 
     async function handleLogout(){
         try{
@@ -30,7 +34,8 @@ export function Navbar() {
         .then(function () {
             user.clearId();
             user.clearToken();
-
+            clearUser();
+                
             nav("/");
             toast.success("Logged out succesfully!", {duration: 2000})
         })
@@ -42,6 +47,32 @@ export function Navbar() {
             console.log(err)
         }
     }
+
+    async function getUserData() {
+        try{
+            await axios.get(`${import.meta.env.VITE_API_URL}user/me/${user.userId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${user.token}`,
+                    }
+                }
+            )
+            .then(function (response) {
+                setUser({username: response.data.username, avatarUrl: ""})
+                
+            })
+            .catch(function (err){
+                    console.error(err)
+            })
+        } 
+        catch(err){
+            console.log(err)
+        }
+    }
+
+    useEffect(() => {
+        if(!userCredentials) { getUserData() }
+    }, [user.userId])
 
     return (
         <div className="w-full h-[10rem] bg-black/20 flex flex-row items-center text-4xl px-8">
@@ -64,15 +95,15 @@ export function Navbar() {
                             className="w-24 h-24 rounded-full border border-gray-300"
                         />
                     </DropdownMenuTrigger>
-                        <DropdownMenuContent className="p-3">
+                        <DropdownMenuContent className="p-3 w-[12rem] bg-[#1F2A4d] text-white">
                               <DropdownMenuLabel>
-                                <div className="flex items-center gap-3 py-2">
+                                <div className="flex items-center gap-4 py-4">
                                 <img
                                     src="/profile-placeholder.png"
                                     alt="Profile"
-                                    className="w-16 h-16 rounded-full border border-gray-300"
+                                    className="w-16 h-16 rounded-full border border-gray-300 flex justify-start"
                                 />
-                                <span className="font-semibold text-lg">{"Username"}</span>
+                                <span className="font-semibold text-lg text-center mx-auto">{userCredentials?.username}</span>
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator/>

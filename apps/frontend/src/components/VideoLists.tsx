@@ -3,6 +3,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { useUserStore } from "@/stores/userStore"
+import { Banner } from "./Banner"
 
 type VideoData = {
     id: string
@@ -22,8 +23,8 @@ export function VideoLists() {
       try{
         const response = await axios.get(`${import.meta.env.VITE_API_URL}video`, { headers: { Authorization: `Bearer ${user.token}` } });
         setVideos(response.data);
-        console.log(response.data)
-        console.log(videos);
+        // console.log(response.data)
+        // console.log(videos);
       }
       catch(err){
         console.error(err)
@@ -33,9 +34,10 @@ export function VideoLists() {
   }, [user.userId])
 
   return (
-    <div className="w-full flex-1 min-h-0 p-2 md:p-4 space-y-4 md:space-y-6 overflow-y-auto">
+    <div className="w-full flex-1 min-h-0 p-0 space-y-4 md:space-y-6 overflow-y-auto">
+      <Banner />
       {rows.map((_, rowIdx) => (
-        <div key={rowIdx} className="space-y-1 md:space-y-2">
+        <div key={rowIdx} className="space-y-1 md:space-y-2 p-2 md:p-4">
           {/* Row Title */}
           <h2 className="text-base md:text-lg font-semibold text-white">
             Row {rowIdx + 1}

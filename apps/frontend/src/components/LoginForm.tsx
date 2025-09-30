@@ -17,7 +17,7 @@ import { useUserStore } from '../stores/userStore'
 import { toast } from "sonner"
 
 export function LoginForm({stateChanger}: any) {
-    const user = useUserStore()
+    const user_ = useUserStore()
     const nav = useNavigate();
 
     const { form, handleSubmit } = useLoginForm(async (data) => {
@@ -27,8 +27,8 @@ export function LoginForm({stateChanger}: any) {
                 password: data.password
             })
             .then(function (response){
-                user.setId(response.data.id);
-                user.setToken(response.data.access_token);
+                user_.setId(response.data.id);
+                user_.setToken(response.data.access_token);
 
                 nav("/home");
             })
@@ -44,7 +44,7 @@ export function LoginForm({stateChanger}: any) {
     });
 
     return (
-        <div className="flex justify-center items-center p-0 m-0 z-50">
+        <div className="flex justify-center items-center p-0 m-0 z-50 text-white">
             <div className="bg-[#1F2A4d] w-[35rem] h-[40rem] backdrop-blur-sm rounded-lg border border-white/30">
                 <div className="text-6xl font-extrabold h-[10rem] flex justify-start items-center mx-[4rem] animate-fadein">Sign In</div>
                 <Form {...form}>

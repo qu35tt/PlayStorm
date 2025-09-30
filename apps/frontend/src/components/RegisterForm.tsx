@@ -41,8 +41,8 @@ export function RegisterForm({stateChanger}: any) {
     });
 
     return (
-        <div className="flex justify-center items-center p-0 m-0 z-50">
-            <div className="bg-[#1F2A3A] w-[35rem] h-[40rem]">
+        <div className="flex justify-center items-center p-0 m-0 z-50 text-white">
+            <div className="bg-[#1F2A4d] w-[35rem] h-[40rem]">
                 <div className="text-6xl font-extrabold h-[10rem] flex justify-start items-center mx-[4rem] animate-fadein">Sign Up</div>
                 <Form {...form}>
                     <form onSubmit={handleSubmit} className="space-y-6 px-[4rem] flex flex-col">
