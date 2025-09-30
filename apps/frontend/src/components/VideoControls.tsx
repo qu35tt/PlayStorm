@@ -1,7 +1,11 @@
 import { Controls, PlayButton, TimeSlider, useMediaState, FullscreenButton, SeekButton, MuteButton, Time } from '@vidstack/react';
 import { Play, Pause, Minimize, Maximize, ArrowRight, ArrowLeft, VolumeX, Volume1, Volume2 } from "lucide-react";
 
-export function VideoControls() {  
+type VideoControlsProps = {
+  name: string;
+};
+
+export function VideoControls({ name }: VideoControlsProps) {  
     const isPaused = useMediaState('paused');
     const volume = useMediaState('volume'),
     isMuted = useMediaState('muted');
@@ -37,7 +41,7 @@ export function VideoControls() {
                         </TimeSlider.Track>
                         <Time type="duration" className="font-bold text-white text-center" />
                     </TimeSlider.Root>
-                    <h2 className="w-screen flex justify-center items-center text-3xl font-semibold py-2">Track Name</h2>  
+                    <h2 className="w-screen flex justify-center items-center text-3xl font-semibold py-2">{name}</h2>  
                     <FullscreenButton className="group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-end rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4 aria-hidden:hidden'">
                         <Maximize className="w-8 h-8 group-data-[active]:hidden" />
                         <Minimize className="w-8 h-8 hidden group-data-[active]:block" />

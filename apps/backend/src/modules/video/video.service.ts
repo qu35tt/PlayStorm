@@ -33,7 +33,8 @@ export class VideoService {
                     id
                 },
                 select: {
-                    URL: true
+                    URL: true,
+                    name: true
                 }
             })
 
