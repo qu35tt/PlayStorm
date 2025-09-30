@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 body {
-  background: linear-gradient(135deg, #071033 0%, #0F2340 50%, rgba(0,201,214,0.06) 100%);
+  background: linear-gradient(135deg, #071033 0%, #0F2340 50%, #071033 100%);
 }
 
 @theme {
