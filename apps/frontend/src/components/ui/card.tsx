@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router"
+import { useModal } from "@/hooks/use-modal-store"
 
 type VideoData = {
     id: string
@@ -8,9 +8,12 @@ type VideoData = {
 }
 
 export function Card(videoData: VideoData){
-    const nav = useNavigate()
+
+    const { onOpen } = useModal()
+
     function handleClick(){
-        nav(`/watch/${videoData.id}`)
+        // nav(`/watch/${videoData.id}`)
+        onOpen("video", videoData.id)
     }
 
     return (

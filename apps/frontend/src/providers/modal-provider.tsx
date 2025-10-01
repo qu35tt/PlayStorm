@@ -1,3 +1,4 @@
+import { VideoModal } from "@/components/modals/video-modal";
 import { useEffect, useState } from "react";
 
 export function ModalProvider() {
@@ -11,7 +12,7 @@ export function ModalProvider() {
 
     return(
         <>
-            
+            <VideoModal />
         </>
     )
 }
