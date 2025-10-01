@@ -32,6 +32,14 @@ model Video{
   length Int
   URL String
   thumbnail String
+  banner String
+  type_id String
+  genre_id String
+
+  type Type @relation(fields: [type_id], references: [id])
+  genre Genre @relation(fields: [genre_id], references: [id])
+
+  favorites Favorites[]
 }
 
 model Party{
@@ -61,4 +69,26 @@ model Messages{
 
   party Party @relation(fields: [party_id], references: [id])
   sender User @relation(fields: [sender_id], references: [id])
+}
+
+model Type{
+  id String @id @default(uuid())
+  name String
+
+  video Video[]
+}
+
+model Genre{
+  id String @id @default(uuid())
+  name String
+
+  video Video[]
+}
+
+model Favorites{
+  id String @id @default(uuid())
+  video_id String
+  addedAt DateTime
+
+  video Video @relation(fields: [video_id], references: [id])
 }

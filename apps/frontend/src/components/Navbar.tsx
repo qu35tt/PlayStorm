@@ -1,4 +1,4 @@
-import { LogOut, Settings, User } from "lucide-react"
+import { LogOut, Search, Settings, User } from "lucide-react"
 import { useNavigate } from "react-router";
 import { useUserStore } from '../stores/userStore'
 import axios from "axios";
@@ -85,6 +85,10 @@ export function Navbar() {
                 <div className="font-extrabold cursor-pointer">Home</div>
                 <div className="font-extrabold cursor-pointer">Films</div>
                 <div className="font-extrabold cursor-pointer">Series</div>
+            </div>
+            <div className="relative flex flex-wrap items-center justify-center px-4">
+                <input type="search" className="realtive w-3/4 m-0 block rounder border border-solid border-neutral-200 bg-transparent px-4 text-base" placeholder="Search" aria-label="Search" />
+                <Search className="w-6 h-6 mx-4"/>
             </div>
             <div className="w-[20rem] h-full flex justify-center items-center focus:outline-0 px-2">
                 <DropdownMenu>
