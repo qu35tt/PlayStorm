@@ -1,6 +1,7 @@
 import { Navbar } from "../components/Navbar"
 import { Footer } from "../components/Footer"
 import { Outlet } from "react-router"
+import { ModalProvider } from "../providers/modal-provider"
 
 
 export function Home() {
@@ -9,6 +10,7 @@ export function Home() {
             <Navbar />
             <Outlet />
             <Footer />
+            <ModalProvider />
         </div>
     )
 }

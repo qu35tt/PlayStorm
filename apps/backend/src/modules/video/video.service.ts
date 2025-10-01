@@ -13,9 +13,7 @@ export class VideoService {
                 select: {
                     id: true,
                     name: true,
-                    length: true,
                     thumbnail: true,
-                    URL: false
                 }
             })
 
@@ -35,6 +33,28 @@ export class VideoService {
                 select: {
                     URL: true,
                     name: true
+                }
+            })
+
+            if(!video) throw new NotFoundException("Video does not exist")
+
+            return video;
+        }
+        catch(err) {
+            throw new InternalServerErrorException(err)
+        }
+    }
+
+    getVideoData(id: string) {
+        try{
+            const video = this.prisma.video.findFirst({
+                where: {
+                    id
+                },
+                select: {
+                    name: true,
+                    banner: true,
+                    genre: true
                 }
             })
 
