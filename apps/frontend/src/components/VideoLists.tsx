@@ -4,6 +4,7 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import { useUserStore } from "@/stores/userStore"
 import { Banner } from "./Banner"
+import { VideoModal } from "./modals/video-modal"
 
 type VideoData = {
     id: string
@@ -35,6 +36,7 @@ export function VideoLists() {
 
   return (
     <div className="w-full flex-1 min-h-0 p-0 space-y-4 md:space-y-6 overflow-y-auto">
+      <VideoModal />
       <Banner />
       {rows.map((_, rowIdx) => (
         <div key={rowIdx} className="space-y-1 md:space-y-2 p-2 md:p-4">
