@@ -13,12 +13,14 @@ import {
 import { DropdownMenuLabel, DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { useEffect } from "react";
 import { useUser } from "@/context/user-context";
+import { useModal } from "@/hooks/use-modal-store";
 
 export function Navbar() {
     const nav = useNavigate();
     const user = useUserStore()
 
     const { userCredentials, setUser, clearUser }= useUser();
+    const { onOpen } = useModal();
 
     async function handleLogout(){
         try{
@@ -74,23 +76,27 @@ export function Navbar() {
         if(!userCredentials) { getUserData() }
     }, [user.userId])
 
+    function handleClick() {
+        onOpen("profile", "");
+    }
+
     return (
-        <div className="w-full h-[10rem] bg-black/20 flex flex-row items-center text-4xl px-8">
+        <div className="w-full h-[10rem] bg-black/20 flex flex-row items-center text-4xl px-4">
             <img
                 src="/logo.svg"
                 className="w-[20rem] h-[10rem] p-6 object-contain z-10 block"
                 alt="Logo"
             />
-            <div className="flex-1 flex flex-row justify-center items-center gap-x-[20rem]">
+            <div className="w-3/4 flex flex-row justify-center items-center space-x-[20rem]">
                 <div className="font-extrabold cursor-pointer">Home</div>
                 <div className="font-extrabold cursor-pointer">Films</div>
                 <div className="font-extrabold cursor-pointer">Series</div>
             </div>
-            <div className="relative flex flex-wrap items-center justify-center px-4">
-                <input type="search" className="realtive w-3/4 m-0 block rounder border border-solid border-neutral-200 bg-transparent px-4 text-base" placeholder="Search" aria-label="Search" />
+            <div className="w-1/4 flex items-center justify-center">
+                <input type="search" className="realtive w-[20rem] m-0 block rounder border border-solid border-neutral-200 bg-transparent px-4 text-base" placeholder="Search" aria-label="Search" />
                 <Search className="w-6 h-6 mx-4"/>
             </div>
-            <div className="w-[20rem] h-full flex justify-center items-center focus:outline-0 px-2">
+            <div className="w-[15rem] h-full flex justify-center items-center focus:outline-0 px-16">
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <img
@@ -111,7 +117,7 @@ export function Navbar() {
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator/>
-                            <DropdownMenuItem>Profile <User className="h-4 w-4 ml-auto"/></DropdownMenuItem>
+                            <DropdownMenuItem  onClick={() => handleClick()}>Profile <User className="h-4 w-4 ml-auto"/></DropdownMenuItem>
                             <DropdownMenuItem>Settings <Settings className="h-4 w-4 ml-auto"/></DropdownMenuItem>
                             <DropdownMenuItem className="text-red-800" onClick={() => handleLogout()}>Logout <LogOut className="h-4 w-4 ml-auto text-red-800"/></DropdownMenuItem>
                         </DropdownMenuContent>

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type ModalType = 'video' | null;
+type ModalType = 'video' | 'profile' | null;
 
 interface ModalStore {
   isOpen: boolean;
