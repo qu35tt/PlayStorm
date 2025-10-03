@@ -45,7 +45,7 @@ export function LoginForm({stateChanger}: any) {
 
     return (
         <div className="flex justify-center items-center p-0 m-0 z-50 text-white">
-            <div className="bg-[#1F2A4d] w-[35rem] h-[40rem] backdrop-blur-sm rounded-lg border border-white/30">
+            <div className="w-[35rem] h-[40rem] backdrop-blur-lg rounded-lg border border-white/30">
                 <div className="text-6xl font-extrabold h-[10rem] flex justify-start items-center mx-[4rem] animate-fadein">Sign In</div>
                 <Form {...form}>
                     <form onSubmit={handleSubmit} className="space-y-6 px-[4rem] flex flex-col">
@@ -56,7 +56,7 @@ export function LoginForm({stateChanger}: any) {
                                 <FormItem>
                                     <FormLabel className="text-2xl">Email</FormLabel>
                                     <FormControl>
-                                        <Input className="bg-[#273444] h-[3rem]" placeholder="Enter Username..." {...field}/>
+                                        <Input className="bg-[#0E111A] h-[3rem]" placeholder="Enter Email..." {...field}/>
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
@@ -69,16 +69,16 @@ export function LoginForm({stateChanger}: any) {
                                 <FormItem>
                                     <FormLabel className="text-2xl">Password</FormLabel>
                                     <FormControl>
-                                        <Input className="bg-[#273444] h-[3rem]" type="password" placeholder="Enter Password..." {...field}/>
+                                        <Input className="bg-[#0E111A] h-[3rem]" type="password" placeholder="Enter Password..." {...field}/>
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className="bg-[#FF6B35] text-2xl w-[10rem] h-[4rem] mx-auto cursor-pointer">Log In!</Button>
+                        <Button type="submit" className="bg-[#3B82F6] text-2xl w-[10rem] h-[4rem] mx-auto cursor-pointer hover:bg-[#06B6D4]">Log In!</Button>
 
-                        <a className="mx-auto text-xl font-semibold text-[#00C9D6] cursor-pointer hover:underline">Zapomenuté heslo?</a>
-                        <div className="mx-auto text-xl font-semibold cursor-default">Nemáte jěště účet? <a className="text-[#00C9D6] cursor-pointer hover:underline" onClick={() => stateChanger(false)}>Vytvořit účet?</a></div>
+                        <a className="mx-auto text-xl font-semibold text-[#3B82F6] cursor-pointer hover:underline">Zapomenuté heslo?</a>
+                        <div className="mx-auto text-xl font-semibold cursor-default">Nemáte jěště účet? <a className="text-[#3B82F6] cursor-pointer hover:underline" onClick={() => stateChanger(false)}>Vytvořit účet?</a></div>
                     </form>
                 </Form>
             </div>
