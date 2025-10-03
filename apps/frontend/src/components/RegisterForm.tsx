@@ -42,7 +42,7 @@ export function RegisterForm({stateChanger}: any) {
 
     return (
         <div className="flex justify-center items-center p-0 m-0 z-50 text-white">
-            <div className="bg-[#1F2A4d] w-[35rem] h-[40rem]">
+            <div className=" w-[35rem] h-[40rem] backdrop-blur-lg border border-gray-600 rounded-lg shadow-lg">
                 <div className="text-6xl font-extrabold h-[10rem] flex justify-start items-center mx-[4rem] animate-fadein">Sign Up</div>
                 <Form {...form}>
                     <form onSubmit={handleSubmit} className="space-y-6 px-[4rem] flex flex-col">
@@ -53,7 +53,11 @@ export function RegisterForm({stateChanger}: any) {
                                 <FormItem>
                                     <FormLabel className="text-2xl">Username</FormLabel>
                                     <FormControl>
-                                        <Input className="bg-[#273444] h-[3rem]" placeholder="Enter Username..." {...field}/>
+                                        <Input 
+                                            className="bg-[#0E111A] h-[3rem]" 
+                                            placeholder="Enter Username..." 
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
@@ -66,7 +70,11 @@ export function RegisterForm({stateChanger}: any) {
                                 <FormItem>
                                     <FormLabel className="text-2xl">Email</FormLabel>
                                     <FormControl>
-                                        <Input className="bg-[#273444] h-[3rem]" placeholder="Enter Email..." {...field}/>
+                                        <Input 
+                                            className="bg-[#0E111A] h-[3rem]" 
+                                            placeholder="Enter Email..." 
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
@@ -79,19 +87,33 @@ export function RegisterForm({stateChanger}: any) {
                                 <FormItem>
                                     <FormLabel className="text-2xl">Password</FormLabel>
                                     <FormControl>
-                                        <Input className="bg-[#273444] h-[3rem]" type="password" placeholder="Enter Password..." {...field}/>
+                                        <Input 
+                                            className="bg-[#0E111A] h-[3rem]" 
+                                            type="password" 
+                                            placeholder="Enter Password..." 
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className="bg-[#FF6B35] text-2xl w-[10rem] h-[4rem] mx-auto cursor-pointer">Register!</Button>
+                        <Button 
+                            type="submit" 
+                            className="bg-[#3B82F6] hover:bg-[#06B6D4] text-2xl w-[10rem] h-[4rem] mx-auto cursor-pointer transition-colors"
+                        >
+                            Register!
+                        </Button>
 
-                        <div className="mx-auto text-xl font-semibold cursor-default">Již máte účet? <a className="text-[#00C9D6] cursor-pointer hover:underline" onClick={() => stateChanger(true)}>Přihlásit se!</a></div>
+                        <div className="mx-auto text-xl font-semibold cursor-default">
+                            Již máte účet? 
+                            <a className="text-[#3B82F6] cursor-pointer hover:underline ml-1" onClick={() => stateChanger(true)}>
+                                Přihlásit se!
+                            </a>
+                        </div>
                     </form>
                 </Form>
             </div>
         </div>
-        
     )
 }

@@ -2,56 +2,77 @@ import { useModal } from "@/hooks/use-modal-store";
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/stores/userStore";
 import axios from "axios";
-import { User } from "lucide-react"
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
 } from "@/components/ui/dialog";
 
-type profileData = {
+import { settingsConfig } from "@/configs/settingsConfig";
+import { Separator } from "@/components/ui/separator";
 
-}
+type profileData = {}
 
 export function ProfileModal() {
-    const user = useUserStore();
-    const { isOpen, onClose, type, videoId } = useModal();
-    const [data, setData] = useState<profileData | null>();
+  const user = useUserStore();
+  const { isOpen, onClose, type, videoId } = useModal();
+  const [data, setData] = useState<profileData | null>();
 
-    const isModalOpen = isOpen && type === "profile";
+  const [activeTab, setActiveTab] = useState<keyof typeof settingsConfig>("profile");
+  const ActiveComponent = settingsConfig[activeTab].component;
 
-    useEffect(() => {
-        setData(null);
-        async function getData(){
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}video/data/${videoId}`, { headers: { Authorization: `Bearer ${user.token}` } })
-        setData(response.data);
-        }
+  const isModalOpen = isOpen && type === "profile";
 
-        if (videoId) {
-        getData();
-        }
-    }, [user.userId, user.token])
-    
-    return(
-        <Dialog open={isModalOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-full w-3/4 bg-[#0F2340] text-white p-0 m-0 overflow-hidden border-0">
-                <DialogHeader className="w-full h-[70rem] m-0 p-0 flex flex-row">
-                    <div className="w-1/4 h-full border-amber-100 border-2">
-                        <ul className="w-3/4 h-full flex flex-col items-center mx-auto py-4">
-                            <li className="w-full h-8 flex flex-row items-center justify-between py-8 text-2xl cursor-pointer rounded-md hover:bg-gray-600/15">
-                                <User className="w-6 h-6 mx-4" />
-                                <span className="flex-1 text-center">Profile</span>
-                                <div className="w-6"></div>
-                            </li>
-                        </ul>
-                    </div>
-                    <div className="w-full h-full border-amber-100 border-2">
-                        
-                    </div>
-                </DialogHeader>
-            </DialogContent>
-        </Dialog>
-    )
+  useEffect(() => {
+    setData(null);
+
+    async function getData() {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}video/data/${videoId}`,
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+      setData(response.data);
+    }
+
+    if (videoId) {
+      getData();
+    }
+  }, [user.userId, user.token]);
+
+  return (
+    <Dialog open={isModalOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-full w-3/4 bg-[#0E111A] text-white p-0 m-0 overflow-hidden border-0">
+        <DialogHeader className="w-full h-[70rem] m-0 p-0 flex flex-row">
+          <div className="w-1/4 h-full border-r border-gray-700">
+            <ul className="w-3/4 h-full flex flex-col mx-auto py-4 space-y-4">
+              {Object.entries(settingsConfig).map(([key, { name, icon: Icon }]) => (
+                <li
+                  key={key}
+                  onClick={() => setActiveTab(key as keyof typeof settingsConfig)}
+                  className={`w-full flex items-center gap-4 px-4 py-3 text-lg cursor-pointer rounded-md transition ${
+                    activeTab === key
+                      ? "bg-gray-700/40 text-white"
+                      : "text-gray-400 hover:bg-gray-600/20"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{name}</span>
+                </li>
+              ))}
+                
+                <div className="w-full h-[5rem] mt-auto">
+                    <Separator className="w-3/4"/>
+                    <div className="text-center p-4">AppVersion: 1.0</div>
+                </div>
+            </ul>
+          </div>
+          <div className="flex-1 h-full p-6 overflow-y-auto">
+            <ActiveComponent />
+          </div>
+
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  );
 }

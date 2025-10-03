@@ -1,9 +1,12 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+import { ANIME } from "@consumet/extensions"
+
 @Injectable()
 export class VideoService {
     constructor(private prisma: PrismaService) {}
+    private animepahe = new ANIME.AnimePahe()
 
     getVideos() {
         try{
@@ -23,7 +26,7 @@ export class VideoService {
         }
     }
 
-    getVideo(id: string) {
+    async getVideo(id: string) {
         try{
             const video = this.prisma.video.findUnique({
                 where: {
@@ -35,8 +38,22 @@ export class VideoService {
                 }
             })
 
-            if(!video) throw new NotFoundException("Video does not exist")
+            // let res;
 
+            if(!video) throw new NotFoundException("Video does not exist")
+            
+            // await this.animepahe.search("Monster").then(data => {
+            //     console.log(data);
+            // }).catch(err => {console.log(err)})
+
+            // await this.animepahe.fetchAnimeInfo("f32622ae-856a-a6bf-1720-4f9688f93f39").then(data => {
+            //     console.log("data", data);
+            // })
+
+            // await this.animepahe.fetchEpisodeSources("f32622ae856aa6bf17204f9688f93f39/43df8adda0fe40bb3f45d9d4b3e471781a03b1072fee59bfe251923c45a9d080").then((data) => {
+            //     res = data;
+            // })
+            // console.log("res", res)
             return video;
         }
         catch(err) {

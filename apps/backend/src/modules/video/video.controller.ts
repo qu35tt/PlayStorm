@@ -12,7 +12,7 @@ export class VideoController {
     return this.videoService.getVideos()
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Get(':id')
   getVideo(@Param('id') id: string){
     return this.videoService.getVideo(id)

@@ -15,7 +15,7 @@ type VideoData = {
 
 
 export function VideoLists() {
-  const rows = Array.from({ length: 1 }) // e.g. 5 rows
+  const rows = Array.from({ length: 5 })
   const [videos, setVideos] = useState<VideoData[]>([]);
   const user = useUserStore()
 
@@ -24,8 +24,6 @@ export function VideoLists() {
       try{
         const response = await axios.get(`${import.meta.env.VITE_API_URL}video`, { headers: { Authorization: `Bearer ${user.token}` } });
         setVideos(response.data);
-        // console.log(response.data)
-        // console.log(videos);
       }
       catch(err){
         console.error(err)
@@ -33,6 +31,8 @@ export function VideoLists() {
     }
     getVideos()
   }, [user.userId])
+
+
 
   return (
     <div className="w-full flex-1 min-h-0 p-0 space-y-4 md:space-y-6 overflow-y-auto">
