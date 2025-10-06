@@ -44,7 +44,7 @@ export function VideoPlayer() {
         return <h1>Loading ...</h1>
     
     return(
-        <MediaPlayer title="Sprite Fight" src={{src: current?.URL, type: "application/x-mpegurl"}} className='realtive w-screen h-screen'>
+        <MediaPlayer title="Sprite Fight" src={current?.URL} className='realtive w-screen h-screen'>
             <MediaProvider />
             <VideoControls name={current!.name} />
         </MediaPlayer>
