@@ -1,16 +1,95 @@
 import { Separator } from "@/components/ui/separator"
 import { Button } from "../ui/button"
-import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { useUserStore } from "@/stores/userStore"
+import { useEffect, useState } from "react"
+import axios from "axios"
+import { ShieldAlert } from "lucide-react"
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { useUpdateForm } from "@/hooks/use-update-form";
+import { toast } from "sonner"
+import { useUser } from "@/context/user-context"
+
+type UserData = {
+    username:string,
+    email: string,
+}
 
 export function ProfileSettings(){
-    
+    const user = useUserStore()
+    const user_ = useUser();
+    const [userData, setUserData] = useState<UserData>()
+    const [buttonOn, setButtonOn] = useState(false);
+
+    useEffect(() => {
+        async function getProfileData(){
+            await axios.get(`${import.meta.env.VITE_API_URL}user/me/${user.userId}`, { headers: { Authorization: `Bearer ${user.token}` } })
+            .then(function(response) {
+                setUserData(response.data);
+            })
+            .catch(function (err){
+                console.error(err)
+            })
+        }
+
+        if(user.userId) getProfileData()
+    }, [user.userId, user.token])
+
+    const { form, handleSubmit } = useUpdateForm(async (data) => {
+        try{
+           const isSame = data.password === data.confirmPassword
+
+            if(!isSame) {
+                toast.error("Passwords don't match!");
+                return;
+            }
+
+           axios.put(`${import.meta.env.VITE_API_URL}user/update/${user.userId}`, {
+                email: data.email ? data.email : userData?.email,
+                username: data.username ? data.username : userData?.username,
+                password: data.password
+           }, { headers: { Authorization: `Bearer ${user.token}` } })
+           .then(function (response){
+                toast.success("Data Updated Succesfully!")
+                user_.setUser(response.data);
+                window.location.reload();
+           })
+           .catch(function (err) {
+                console.log(err);
+           })
+        }
+        catch(err){
+            console.error(err)
+        }
+    })
+
+    function handleChange(){
+        // Get current form values
+        const formValues = form.getValues();
+        
+        // Check if all fields are empty
+        const allFieldsEmpty = !formValues.username && 
+                            !formValues.email && 
+                            !formValues.password && 
+                            !formValues.confirmPassword;
+        
+        // Set button state based on whether fields have content
+        setButtonOn(!allFieldsEmpty);
+    }
     
     return(
         <>
             <div className="h-1/4 flex flex-row items-center px-8">
                 <img
-                    src="./public/default_avatar.webp"
+                    src="/default_avatar.webp"
                     alt="Profile"
                     className="w-[13rem] h-[13rem] rounded-full border border-gray-300 mx-8"
                 />
@@ -18,21 +97,113 @@ export function ProfileSettings(){
                 <Button className="bg-gray-600 text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0">Delete avatar</Button>
             </div>
             <Separator className="bg-gray-400/70"/>
-            <div className="max-h-3/4 px-8 grid grid-cols-2 gap-x-4 py-4 space-y-8">
-                <div className="space-y-2">
-                    <Label className="text-md">Username</Label>
-                    <Input className="bg-[#0E111A] h-[3rem]" type="text" placeholder="Enter Username..."/>
-                </div>
-                
-                <div className="space-y-2">
-                    <Label className="text-md">Email</Label>
-                    <Input className="bg-[#0E111A] h-[3rem]" type="email" placeholder="Enter Email..."/>
-                </div>
-                
-                <div className="space-y-2">
-                    <Label className="text-md">Password</Label>
-                    <Input className="bg-[#0E111A] h-[3rem]" type="password" placeholder="Enter Password..."/>
-                </div>
+            
+            <div className="w-full h-[5rem] bg-[#06B6D4] flex items-center justify-center rounded-md my-8">
+                <ShieldAlert className="w-[3rem] h-[4rem] text-black"/>
+                <h2 className="text-center text-black font-semibold">U can change details by clicking in box and type new ones. Then click save changes.</h2>
+            </div>
+
+            <div className="px-8 py-4">
+                <Form {...form}>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* First row - Username and Email */}
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                            <FormField 
+                                control={form.control} 
+                                name="username"
+                                render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel className="text-md">Username</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                {...field}
+                                                className="bg-[#0E111A] h-[3rem] focus:placeholder:text-transparent placeholder:font-bold" 
+                                                type="text" 
+                                                placeholder={userData ? userData.username : "Enter username..."}
+                                                onKeyUp={handleChange}
+                                                required={false}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            
+                            <FormField 
+                                control={form.control} 
+                                name="email"
+                                render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel className="text-md">Email</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                {...field}
+                                                className="bg-[#0E111A] h-[3rem] focus:placeholder:text-transparent placeholder:font-bold" 
+                                                type="email" 
+                                                placeholder={userData ? userData.email : "Enter email..."}
+                                                onKeyUp={handleChange}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {/* Second row - Password fields */}
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                            <FormField 
+                                control={form.control} 
+                                name="password"
+                                render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel className="text-md">New Password</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                {...field}
+                                                className="bg-[#0E111A] h-[3rem] focus:placeholder:text-transparent placeholder:font-bold" 
+                                                type="password" 
+                                                placeholder="Enter new password..."
+                                                onKeyUp={handleChange}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            
+                            <FormField 
+                                control={form.control} 
+                                name="confirmPassword"
+                                render={({field}) => (
+                                    <FormItem>
+                                        <FormLabel className="text-md">Confirm Password</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                {...field}
+                                                className="bg-[#0E111A] h-[3rem] focus:placeholder:text-transparent placeholder:font-bold" 
+                                                type="password" 
+                                                placeholder="Confirm new password..."
+                                                onKeyUp={handleChange}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {/* Submit button */}
+                        <div className="flex justify-center pt-4">
+                            {buttonOn && <Button 
+                                type="submit" 
+                                className="bg-[#3B82F6] text-xl w-[10rem] h-[4rem] cursor-pointer hover:bg-[#06B6D4]"
+                            >
+                                Save Changes!
+                            </Button>}
+                        </div>
+                    </form>
+                </Form>
             </div>
         </>
     )

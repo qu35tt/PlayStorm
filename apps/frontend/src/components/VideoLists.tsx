@@ -1,10 +1,9 @@
 import { Card } from "@/components/ui/card"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import axios from "axios"
-import { useEffect, useState } from "react"
-import { useUserStore } from "@/stores/userStore"
+
 import { Banner } from "./Banner"
 import { VideoModal } from "./modals/video-modal"
+import { useOutletContext } from "react-router"
 
 type VideoData = {
     id: string
@@ -13,26 +12,13 @@ type VideoData = {
     thumbnail: string
 }
 
+interface OutletContext {
+    videos: VideoData[];
+}
 
 export function VideoLists() {
   const rows = Array.from({ length: 5 })
-  const [videos, setVideos] = useState<VideoData[]>([]);
-  const user = useUserStore()
-
-  useEffect(() => {
-    async function getVideos(){
-      try{
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}video`, { headers: { Authorization: `Bearer ${user.token}` } });
-        setVideos(response.data);
-      }
-      catch(err){
-        console.error(err)
-      }
-    }
-    getVideos()
-  }, [user.userId])
-
-
+  const { videos } = useOutletContext<OutletContext>();
 
   return (
     <div className="w-full flex-1 min-h-0 p-0 space-y-4 md:space-y-6 overflow-y-auto">

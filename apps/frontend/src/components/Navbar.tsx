@@ -16,7 +16,12 @@ import { useUser } from "@/context/user-context";
 import { useModal } from "@/hooks/use-modal-store";
 import { Separator } from "@/components/ui/separator";
 
-export function Navbar() {
+interface NavbarProps {
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+}
+
+export function Navbar({ searchQuery, setSearchQuery } : NavbarProps) {
     const nav = useNavigate();
     const user = useUserStore()
 
@@ -94,14 +99,14 @@ export function Navbar() {
                 <div className="font-extrabold cursor-pointer">Series</div>
             </div>
             <div className="w-1/4 flex items-center justify-center">
-                <input type="search" className="realtive w-[20rem] block rounded-2xl onfocus:border-1 border-neutral-200 bg-transparent p-4 text-base" placeholder="Search" aria-label="Search" />
+                <input type="search" className="realtive w-[20rem] block rounded-2xl onfocus:border-1 border-neutral-200 bg-transparent p-4 text-base" placeholder="Search" aria-label="Search" onChange={(e) => setSearchQuery(e.target.value)} />
                 <Search className="w-6 h-6 mx-4"/>
             </div>
             <div className="w-[20rem] h-full flex justify-center items-center focus:outline-0 px-16">
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <img
-                            src="./public/default_avatar.webp"
+                            src="/default_avatar.webp"
                             alt="Profile"
                             className="w-24 h-24 rounded-full border border-gray-300"
                         />
