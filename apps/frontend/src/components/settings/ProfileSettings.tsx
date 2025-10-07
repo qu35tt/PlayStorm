@@ -5,7 +5,6 @@ import { useUserStore } from "@/stores/userStore"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { ShieldAlert } from "lucide-react"
-import { FileUpload } from "@/components/file-upload"
 
 import {
   Form,
@@ -94,7 +93,6 @@ export function ProfileSettings(){
                     alt="Profile"
                     className="w-[13rem] h-[13rem] rounded-full border border-gray-300 mx-8"
                 />
-                {/* <FileUpload /> */}
                 <Button className="bg-[#3B82F6] text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0">Upload avatar</Button>
                 <Button className="bg-gray-600 text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0">Delete avatar</Button>
             </div>
