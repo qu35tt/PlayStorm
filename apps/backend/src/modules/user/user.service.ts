@@ -1,8 +1,13 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { NotFoundError } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserDataDto } from './dto';
+import { createClient } from "@supabase/supabase-js"
 const argon = require('argon2');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
 
 @Injectable()
 export class UserService {
@@ -50,7 +55,38 @@ export class UserService {
             return updateUser;
         }
         catch(err){
-            throw new InternalServerErrorException(err)
+            throw new InternalServerErrorException(err);
+        }
+    }
+
+    async uploadAvatar(id: string, file:Express.Multer.File){
+        try{
+            if(!file) throw new InternalServerErrorException("No File Provided");
+
+            const fileExt = file.originalname.split('.').pop();
+            const fileName = `${id}.${fileExt}`;
+            const filePath = `/${fileName}`;
+
+            const { data, error } = await supabase.storage
+                .from('profile-pictures') // your bucket name
+                .upload(filePath, file.buffer, {
+                contentType: file.mimetype,
+                cacheControl: '3600',
+                upsert: false,
+            });
+
+            if (error) {
+                throw new InternalServerErrorException(error.message);
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            return { url: publicUrlData.publicUrl };
+        }
+        catch(err){
+            throw new InternalServerErrorException(err);
         }
     }
 }
