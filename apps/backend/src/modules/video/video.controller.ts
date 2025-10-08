@@ -12,6 +12,11 @@ export class VideoController {
     return this.videoService.getVideos()
   }
 
+  @Get('/random')
+  getRandomBannerVideo(){
+    return this.videoService.getRandomVideo();
+  }
+
   // @UseGuards(AuthGuard)
   @Get(':id')
   getVideo(@Param('id') id: string){

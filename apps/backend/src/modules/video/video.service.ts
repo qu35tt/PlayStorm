@@ -82,4 +82,29 @@ export class VideoService {
             throw new InternalServerErrorException(err)
         }
     }
+
+    async getRandomVideo(){
+        try{
+            const count = await this.prisma.video.count();
+            if (count === 0) throw new NotFoundException('No videos found');
+
+            const randomIndex = Math.floor(Math.random() * count);
+
+            const [video] = await this.prisma.video.findMany({
+                skip: randomIndex,
+                take: 1,
+                select: {
+                    id: true,
+                    name: true,
+                    banner: true,
+                }
+            });
+            console.log(video)
+
+            return video;
+        }
+        catch(err){
+            throw new InternalServerErrorException(err)
+        }
+    }
 }
