@@ -11,12 +11,16 @@ type VideoData = {
     name: string
     length: number,
     thumbnail: string
+    videotype: 'MOVIE' | 'SERIES'
 }
+
+type VideoType = "ALL" | "MOVIE" | "SERIES"
 
 export function Home() {
     const [searchQuery, setSearchQuery] = useState("");
     const [videos, setVideos] = useState<VideoData[]>([]);
     const user = useUserStore();
+    const [type, setType] = useState<VideoType>("ALL");
     
     useEffect(() => {
         async function getVideos(){
@@ -33,12 +37,14 @@ export function Home() {
       }, [user.userId])
 
       const filteredVideos = videos.filter((video) => {
-        return video.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesType = (type === "ALL") || (video.videotype === type);
+        const matchesQuery = video.name.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesType && matchesQuery;
       })
 
     return(
         <div className="w-screen h-screen flex flex-col text-white">
-            <Navbar  searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+            <Navbar setSearchQuery={setSearchQuery} setType={setType} selectedType={type} />
             <Outlet context={{ videos: filteredVideos }} />
             <Footer />
             <ModalProvider />

@@ -112,9 +112,9 @@ export function ProfileSettings(){
 
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}user/upload/${user.userId}`, formData, { headers: { Authorization: `Bearer ${user.token}` } });
-            toast.success("Avatar uploaded Succesfully");
             user_.setUser(response.data);
             window.location.reload();
+            toast.success("Avatar uploaded Succesfully");
         } catch (err) {
             console.error(err);
         }
