@@ -21,7 +21,8 @@ export class UserService {
                 },
                 select: {
                     username: true,
-                    email: true
+                    email: true,
+                    avatarUrl: true
                 }
             })
 
@@ -59,34 +60,48 @@ export class UserService {
         }
     }
 
-    async uploadAvatar(id: string, file:Express.Multer.File){
-        try{
-            if(!file) throw new InternalServerErrorException("No File Provided");
+    async uploadAvatar(id: string, file: Express.Multer.File) {
+    try {
+        if (!file) throw new InternalServerErrorException("No file provided");
 
-            const fileExt = file.originalname.split('.').pop();
-            const fileName = `${id}.${fileExt}`;
-            const filePath = `/${fileName}`;
+        const existing = await this.prisma.user.findUnique({ where: { id } });
+        if (!existing) throw new NotFoundException("User not found");
 
-            const { data, error } = await supabase.storage
-                .from('profile-pictures') // your bucket name
-                .upload(filePath, file.buffer, {
-                contentType: file.mimetype,
-                cacheControl: '3600',
-                upsert: false,
-            });
+        // --- File info ---
+        const fileExt = file.originalname.split(".").pop()?.toLowerCase();
+        const bucket = "profile-pictures";
+        const filePath = `${id}.${fileExt}`; // fixed structure, supports all types
+        const contentType = file.mimetype;
 
-            if (error) {
-                throw new InternalServerErrorException(error.message);
-            }
+        // --- Upload (safe overwrite) ---
+        const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file.buffer, {
+            contentType,
+            cacheControl: "0",
+            upsert: true, // 👈 safely replaces old file if exists
+        });
+        console.log(data?.fullPath)
+        if (error) throw new InternalServerErrorException(error.message);
 
-            const { data: publicUrlData } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
+        // --- Get public URL ---
+        const { data: publicUrlData } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(filePath);
 
-            return { url: publicUrlData.publicUrl };
-        }
-        catch(err){
-            throw new InternalServerErrorException(err);
+        // --- Cache-busting to ensure user sees updated avatar ---
+        const avatarUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`;
+
+        // --- Save to DB ---
+        const updatedUser = await this.prisma.user.update({
+        where: { id },
+        data: { avatarUrl },
+        select: { avatarUrl: true, username: true },
+        });
+
+        return updatedUser;
+        } catch (err) {
+            throw new InternalServerErrorException(err.message || err);
         }
     }
 }
