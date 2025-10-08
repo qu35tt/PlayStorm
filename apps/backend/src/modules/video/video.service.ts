@@ -16,6 +16,7 @@ export class VideoService {
                     id: true,
                     name: true,
                     thumbnail: true,
+                    videotype: true
                 }
             })
 
@@ -99,7 +100,6 @@ export class VideoService {
                     banner: true,
                 }
             });
-            console.log(video)
 
             return video;
         }

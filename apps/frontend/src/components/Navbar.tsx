@@ -16,17 +16,24 @@ import { useUser } from "@/context/user-context";
 import { useModal } from "@/hooks/use-modal-store";
 import { Separator } from "@/components/ui/separator";
 
+type VideoType = "ALL" | "MOVIE" | "SERIES"
+
 interface NavbarProps {
-    searchQuery: string;
     setSearchQuery: (query: string) => void;
+    setType: (query: VideoType) => void;
+    selectedType: VideoType;
 }
 
-export function Navbar({ searchQuery, setSearchQuery } : NavbarProps) {
+export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) {
     const nav = useNavigate();
     const user = useUserStore()
 
     const { userCredentials, setUser, clearUser }= useUser();
     const { onOpen } = useModal();
+
+    const base = "font-extrabold cursor-pointer hover:scale-112 hover:bg-gray-500/20 p-4 rounded-lg ease-in-out transition duration-250";
+    const activeClass = "underline decoration-4 underline-offset-8 decoration-white"
+    const itemClass = (t: VideoType) => `${base} ${selectedType === t ? activeClass : ""}`;
 
     async function handleLogout(){
         try{
@@ -48,7 +55,7 @@ export function Navbar({ searchQuery, setSearchQuery } : NavbarProps) {
             toast.success("Logged out succesfully!", {duration: 2000})
         })
         .catch(function (err){
-                console.error(err)
+            console.error(err)
         })
         } 
         catch(err){
@@ -86,6 +93,22 @@ export function Navbar({ searchQuery, setSearchQuery } : NavbarProps) {
         onOpen("profile", "");
     }
 
+    function handleFilter(index: number){
+        switch(index){
+            case 0:
+                setType("ALL");
+                break;
+            case 1:
+                setType("MOVIE");
+                break;
+            case 2:
+                setType("SERIES");
+                break;
+            default:
+                break;
+        }
+    }
+
     return (
         <div className="w-full h-[10rem] bg-[#0E111A] flex flex-row items-center text-4xl px-4">
             <img
@@ -94,9 +117,9 @@ export function Navbar({ searchQuery, setSearchQuery } : NavbarProps) {
                 alt="Logo"
             />
             <div className="w-3/4 flex flex-row justify-center items-center space-x-[20rem]">
-                <div className="font-extrabold cursor-pointer">Home</div>
-                <div className="font-extrabold cursor-pointer">Films</div>
-                <div className="font-extrabold cursor-pointer">Series</div>
+                <div className={itemClass("ALL")} onClick={() => handleFilter(0)}>Home</div>
+                <div className={itemClass("MOVIE")} onClick={() => handleFilter(1)}>Films</div>
+                <div className={itemClass("SERIES")} onClick={() => handleFilter(2)}>Series</div>
             </div>
             <div className="w-1/4 flex items-center justify-center">
                 <input type="search" className="realtive w-[20rem] block rounded-2xl onfocus:border-1 border-neutral-200 bg-transparent p-4 text-base" placeholder="Search" aria-label="Search" onChange={(e) => setSearchQuery(e.target.value)} />

@@ -4,7 +4,7 @@ import { z } from "zod";
 //Schéma Formu
 export const loginFormSchema = z.object({
   email: z.string().min(2, { message: "Username must be at least 2 characters." }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  password: z.string().min(6, { message: "Password must be at least 8 characters." }),
 });
 
 export type LoginFormValues = z.infer<typeof loginFormSchema>;
