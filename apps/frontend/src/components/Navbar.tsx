@@ -66,7 +66,7 @@ export function Navbar({ searchQuery, setSearchQuery } : NavbarProps) {
                 }
             )
             .then(function (response) {
-                setUser({username: response.data.username, avatarUrl: ""})
+                setUser({username: response.data.username, avatarUrl: response.data.avatarUrl})
                 
             })
             .catch(function (err){
@@ -106,18 +106,18 @@ export function Navbar({ searchQuery, setSearchQuery } : NavbarProps) {
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <img
-                            src="/default_avatar.webp"
+                            src={userCredentials?.avatarUrl ?? "/default_avatar.webp"}
                             alt="Profile"
-                            className="w-24 h-24 rounded-full border border-gray-300"
+                            className="w-24 h-24 object-fill rounded-full border border-gray-300"
                         />
                     </DropdownMenuTrigger>
                         <DropdownMenuContent className="p-3 w-[12rem] bg-[#0E111A] text-white border-0">
                               <DropdownMenuLabel>
                                 <div className="flex items-center gap-4 py-4">
                                 <img
-                                    src="./public/default_avatar.webp"
+                                    src={userCredentials?.avatarUrl ?? "/default_avatar.webp"}
                                     alt="Profile"
-                                    className="w-16 h-16 rounded-full border border-gray-300 flex justify-start"
+                                    className="w-16 h-16 object-contain rounded-full border border-gray-300 flex justify-start"
                                 />
                                 <span className="font-semibold text-lg text-center mx-auto">{userCredentials?.username}</span>
                                 </div>

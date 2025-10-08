@@ -2,7 +2,7 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "../ui/button"
 import { Input } from "@/components/ui/input"
 import { useUserStore } from "@/stores/userStore"
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ChangeEvent } from "react"
 import axios from "axios"
 import { ShieldAlert } from "lucide-react"
 
@@ -28,6 +28,8 @@ export function ProfileSettings(){
     const user_ = useUser();
     const [userData, setUserData] = useState<UserData>()
     const [buttonOn, setButtonOn] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
 
     useEffect(() => {
         async function getProfileData(){
@@ -71,7 +73,7 @@ export function ProfileSettings(){
         }
     })
 
-    function handleChange(){
+    function handleValueChange(){
         // Get current form values
         const formValues = form.getValues();
         
@@ -84,17 +86,66 @@ export function ProfileSettings(){
         // Set button state based on whether fields have content
         setButtonOn(!allFieldsEmpty);
     }
+
+    function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+        const selected = e.target.files?.[0] ?? null;
+
+        if (selected) {
+            setFile(selected);
+            const url = URL.createObjectURL(selected);
+            setPreview(url);
+        } else {
+            setFile(null);
+            setPreview(null);
+        }
+    }
+
+    async function handleFileUpload(){
+
+        if (!file) {
+            toast.error("No file selected to upload");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file, file.name);
+
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}user/upload/${user.userId}`, formData, { headers: { Authorization: `Bearer ${user.token}` } });
+            toast.success("Avatar uploaded Succesfully");
+            user_.setUser(response.data);
+            window.location.reload();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // function handleFileDelete() {
+    //     setFile(null);
+    //     setPreview(null);
+    //     handleFileUpload();
+    // }
     
     return(
         <>
             <div className="h-1/4 flex flex-row items-center px-8">
-                <img
-                    src="/default_avatar.webp"
-                    alt="Profile"
-                    className="w-[13rem] h-[13rem] rounded-full border border-gray-300 mx-8"
-                />
-                <Button className="bg-[#3B82F6] text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0">Upload avatar</Button>
-                <Button className="bg-gray-600 text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0">Delete avatar</Button>
+                <div className="relative w-[13rem] h-[13rem] mx-8">
+                    <label className="cursor-pointer block w-full h-full rounded-full overflow-hidden border border-gray-300">
+                    <img
+                        src={preview || user_.userCredentials?.avatarUrl || "/default_avatar.webp"}
+                        alt="Avatar preview"
+                        className="w-full h-full object-cover"
+                    />
+                    <Input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                    />
+                    </label>
+                </div>
+                <Button className="bg-[#3B82F6] text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0" onClick={handleFileUpload}>Upload avatar</Button>
+                {/* <Button className="bg-gray-600 text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0" onClick={handleFileDelete}>Delete avatar</Button> */}
             </div>
             <Separator className="bg-gray-400/70"/>
             
@@ -120,7 +171,7 @@ export function ProfileSettings(){
                                                 className="bg-[#0E111A] h-[3rem] focus:placeholder:text-transparent placeholder:font-bold" 
                                                 type="text" 
                                                 placeholder={userData ? userData.username : "Enter username..."}
-                                                onKeyUp={handleChange}
+                                                onKeyUp={handleValueChange}
                                                 required={false}
                                             />
                                         </FormControl>
@@ -141,7 +192,7 @@ export function ProfileSettings(){
                                                 className="bg-[#0E111A] h-[3rem] focus:placeholder:text-transparent placeholder:font-bold" 
                                                 type="email" 
                                                 placeholder={userData ? userData.email : "Enter email..."}
-                                                onKeyUp={handleChange}
+                                                onKeyUp={handleValueChange}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -164,7 +215,7 @@ export function ProfileSettings(){
                                                 className="bg-[#0E111A] h-[3rem] focus:placeholder:text-transparent placeholder:font-bold" 
                                                 type="password" 
                                                 placeholder="Enter new password..."
-                                                onKeyUp={handleChange}
+                                                onKeyUp={handleValueChange}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -184,7 +235,7 @@ export function ProfileSettings(){
                                                 className="bg-[#0E111A] h-[3rem] focus:placeholder:text-transparent placeholder:font-bold" 
                                                 type="password" 
                                                 placeholder="Confirm new password..."
-                                                onKeyUp={handleChange}
+                                                onKeyUp={handleValueChange}
                                             />
                                         </FormControl>
                                         <FormMessage />
