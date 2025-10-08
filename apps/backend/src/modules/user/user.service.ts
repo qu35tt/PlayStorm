@@ -81,7 +81,6 @@ export class UserService {
             cacheControl: "0",
             upsert: true, // 👈 safely replaces old file if exists
         });
-        console.log(data?.fullPath)
         if (error) throw new InternalServerErrorException(error.message);
 
         // --- Get public URL ---
