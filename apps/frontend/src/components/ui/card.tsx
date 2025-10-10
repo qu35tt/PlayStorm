@@ -3,26 +3,40 @@ import { useModal } from "@/hooks/use-modal-store"
 type VideoData = {
     id: string
     name: string
-    length: number,
+    length: number
     thumbnail: string
 }
 
-export function Card(videoData: VideoData){
+interface CardProps {
+    videoData: VideoData
+}
+
+export function Card({ videoData }: CardProps){
 
     const { onOpen } = useModal()
 
     function handleClick(){
-        // nav(`/watch/${videoData.id}`)
         onOpen("video", videoData.id)
     }
 
     return (
-        <div className="w-[30rem] h-[20rem] bg-black m-8 snap-center snap-always object-scale- cursor-pointer hover:scale-108 ease-in-out transition duration-[200ms]" onClick={handleClick}>
-            <img
-                src={videoData.thumbnail}
-                className="w-full h-full object-fit z-10 block"
-                alt={videoData.name}
-            />
+        <div
+            className="flex-shrink-0 w-72 sm:w-80 md:w-96 lg:w-[30rem] m-4 rounded-lg overflow-hidden bg-black cursor-pointer transform hover:scale-105 transition-all duration-200"
+            onClick={handleClick}
+            role="button"
+            aria-label={`Open ${videoData.name}`}
+        >
+            <div className="w-full aspect-[16/9] bg-gray-800">
+                <img
+                    src={videoData.thumbnail}
+                    className="w-full h-full object-cover block"
+                    alt={videoData.name}
+                />
+            </div>
+            {/* optional footer with title */}
+            <div className="p-3 text-sm md:text-base text-white">
+                <div className="font-semibold truncate">{videoData.name}</div>
+            </div>
         </div>
     )
 }

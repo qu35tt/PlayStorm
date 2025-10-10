@@ -6,7 +6,7 @@ import { ANIME } from "@consumet/extensions"
 @Injectable()
 export class VideoService {
     constructor(private prisma: PrismaService) {}
-    private animepahe = new ANIME.AnimePahe()
+    private animepahe = new ANIME.Gogoanime()
 
     getVideos() {
         try{
@@ -39,22 +39,28 @@ export class VideoService {
                 }
             })
 
-            // let res;
+            let res;
 
-            if(!video) throw new NotFoundException("Video does not exist")
-            
-            // await this.animepahe.search("Monster").then(data => {
-            //     console.log(data);
-            // }).catch(err => {console.log(err)})
+            // call external APIs but don't let them break the response
+            try {
+                const searchData = await this.animepahe.search("Monster");
+                console.log('animepahe.search', searchData);
 
-            // await this.animepahe.fetchAnimeInfo("f32622ae-856a-a6bf-1720-4f9688f93f39").then(data => {
-            //     console.log("data", data);
-            // })
+                const info = await this.animepahe.fetchAnimeInfo("f32622ae-856a-a6bf-1720-4f9688f93f39");
+                console.log('fetchAnimeInfo', info);
 
-            // await this.animepahe.fetchEpisodeSources("f32622ae856aa6bf17204f9688f93f39/43df8adda0fe40bb3f45d9d4b3e471781a03b1072fee59bfe251923c45a9d080").then((data) => {
-            //     res = data;
-            // })
-            // console.log("res", res)
+                const sources = await this.animepahe.fetchEpisodeSources("f32622ae856aa6bf17204f9688f93f39/43df8adda0fe40bb3f45d9d4b3e471781a03b1072fee59bfe251923c45a9d080");
+                console.log('fetchEpisodeSources', sources);
+            } catch (extErr) {
+                // log full error for debugging (status, body)
+                console.warn('[VideoService] animepahe error:', {
+                    message: (extErr as any)?.message,
+                    status: (extErr as any)?.response?.status,
+                    data: (extErr as any)?.response?.data
+                });
+                // optional: rethrow or return partial result. Here we continue and return DB video.
+            }
+
             return video;
         }
         catch(err) {
