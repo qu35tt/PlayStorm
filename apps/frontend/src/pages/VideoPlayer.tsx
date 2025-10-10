@@ -23,8 +23,6 @@ export function VideoPlayer() {
 
     const [current, setCurrent] = useState<Video | null>(null);
 
-    console.log("id" + id.id)
-
     useEffect(() => {
         async function getVideo()
         {
@@ -44,7 +42,7 @@ export function VideoPlayer() {
         return <h1>Loading ...</h1>
     
     return(
-        <MediaPlayer title="Sprite Fight" src={current?.URL} className='realtive w-screen h-screen'>
+        <MediaPlayer title="Sprite Fight" streamType="on-demand" load="visible"  src={[{src: "https://m3u8proxy-five.vercel.app/m3u8-proxy?url=https://vault-15.owocdn.top/stream/15/15/72b7cbab27a0178dc966b2ff4681df407a5b1ba4fcc8afe2252e472aee511db3/uwu.m3u8", type: "application/x-mpegurl"}]} crossOrigin="anonymous"  className='realtive w-screen h-screen'>
             <MediaProvider />
             <VideoControls name={current!.name} />
         </MediaPlayer>

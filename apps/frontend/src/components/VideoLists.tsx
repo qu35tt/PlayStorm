@@ -61,9 +61,7 @@ export function VideoLists() {
             {getRowTitle(rowIdx, rowVideos.length)}
           </h2>
 
-          {/* container: buttons are siblings so they don't overlap cards */}
           <div className="relative">
-            {/* Left button */}
             <button
               type="button"
               aria-label="Scroll left"
@@ -73,21 +71,19 @@ export function VideoLists() {
               <ChevronLeft className="w-5 h-5" />
             </button>
 
-            {/* ScrollArea sits between buttons; add horizontal padding so cards don't go under buttons */}
             <ScrollArea
               className="w-full whitespace-nowrap rounded-md"
               viewportRef={(el) => { rowViewportsRef.current[rowIdx] = el; }}
             >
-              <div className="flex gap-2 md:gap-3 px-14"> {/* px-14 keeps content clear of buttons */}
+              <div className="flex gap-2 md:gap-3 px-14 justify-center">
                 {rowVideos.map((video, vidIdx) => (
                   <div key={video.id || vidIdx} className="min-w-[12rem] sm:min-w-[18rem] md:min-w-[24rem] lg:min-w-[30rem]">
-                    <Card {...video} />
+                    <Card videoData={video} />
                   </div>
                 ))}
               </div>
             </ScrollArea>
 
-            {/* Right button */}
             <button
               type="button"
               aria-label="Scroll right"

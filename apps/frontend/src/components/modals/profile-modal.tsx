@@ -42,7 +42,7 @@ export function ProfileModal() {
 
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-full w-3/4 bg-[#0E111A] text-white p-0 m-0 overflow-hidden border-0">
+      <DialogContent className="max-w-full md:w-3/4 w-2/4 max-h-screen h-4/5 bg-[#0E111A] text-white p-0 m-0 overflow-hidden border-0">
         <DialogHeader className="w-full h-[70rem] m-0 p-0 flex flex-row">
           <div className="w-1/4 h-full border-r border-gray-700">
             <ul className="w-3/4 h-full flex flex-col mx-auto py-4 space-y-4">
