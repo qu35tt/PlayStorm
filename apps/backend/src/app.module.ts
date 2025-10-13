@@ -4,7 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
-import { EventsGateway } from './gateways/events.gateway';
+import { EventsGateway } from './gateways/party.gateway';
 import { VideoModule } from './modules/video/video.module';
 
 @Module({
