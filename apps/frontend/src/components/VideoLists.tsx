@@ -47,7 +47,7 @@ export function VideoLists() {
   function handleScroll(rowIndex: number, direction: number){
     const el = rowViewportsRef.current[rowIndex];
     if (!el) return;
-    const amount = Math.round(el.clientWidth * 0.9) * direction; // 1 => right, -1 => left
+    const amount = Math.round(el.clientWidth * 0.8) * direction; // 1 => right, -1 => left
     el.scrollBy({ left: amount, behavior: 'smooth' });
   }
 

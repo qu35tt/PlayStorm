@@ -1,11 +1,12 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ProxyService } from '../proxy/proxy/proxy.service';
 
 import { ANIME } from "@consumet/extensions"
 
 @Injectable()
 export class VideoService {
-    constructor(private prisma: PrismaService) {}
+    constructor(private prisma: PrismaService, private proxy: ProxyService) {}
     private animepahe = new ANIME.Gogoanime()
 
     getVideos() {
@@ -29,7 +30,7 @@ export class VideoService {
 
     async getVideo(id: string) {
         try{
-            const video = this.prisma.video.findUnique({
+            const video = await this.prisma.video.findUnique({
                 where: {
                     id
                 },
@@ -39,10 +40,13 @@ export class VideoService {
                 }
             })
 
-            let res;
+            if (!video) throw new NotFoundException('Video not found');
+
+            let playlist: string | null = null;
 
             // call external APIs but don't let them break the response
             try {
+                // example animepahe calls (non-blocking for playlist)
                 const searchData = await this.animepahe.search("Monster");
                 console.log('animepahe.search', searchData);
 
@@ -58,10 +62,26 @@ export class VideoService {
                     status: (extErr as any)?.response?.status,
                     data: (extErr as any)?.response?.data
                 });
-                // optional: rethrow or return partial result. Here we continue and return DB video.
+                // continue; external API errors do not break the DB response
             }
 
-            return video;
+            // Use the proxy to fetch the m3u8 playlist if URL exists
+            try {
+                if (video.URL) {
+                    // If your stored URL is already an m3u8, proxy.fetchText will return its contents.
+                    // If the stored URL points to a page that resolves to an m3u8, adjust accordingly.
+                    const proxied = await this.proxy.fetchText(video.URL);
+                    playlist = proxied;
+                }
+            } catch (proxyErr) {
+                console.warn('[VideoService] proxy fetch error:', (proxyErr as any)?.message);
+                playlist = null; // don't fail the whole request
+            }
+
+            return {
+                ...video,
+                playlist,
+            };
         }
         catch(err) {
             throw new InternalServerErrorException(err)

@@ -30,8 +30,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('test')
   handleTest(@MessageBody() data: { text: string }, @ConnectedSocket() client: Socket)  {
     console.log('Received from client:', data.text);
+    this.server.to("test room").emit('test', data.text)
+  }
 
-    // Emit back to the same client
-    client.emit('test', `Message: ${data.text}`);
+  @SubscribeMessage('join')
+  handleJoin(@ConnectedSocket() client: Socket) {
+    client.join("test room");
   }
 }
