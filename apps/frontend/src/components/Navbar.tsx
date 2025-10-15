@@ -178,7 +178,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
             {/* Mobile menu - slides down on small screens */}
             {mobileOpen && (
                 <div className="md:hidden w-full bg-[#0E111A] px-6 py-4 border-t border-gray-800">
-                    <div className="flex flex-col items-start space-y-4 text-xl">
+                    <div className="flex flex-col items-center space-y-4 text-xl">
                         <button className={itemClass("ALL")} onClick={() => { handleFilter(0); setMobileOpen(false); }}>Home</button>
                         <button className={itemClass("MOVIE")} onClick={() => { handleFilter(1); setMobileOpen(false); }}>Films</button>
                         <button className={itemClass("SERIES")} onClick={() => { handleFilter(2); setMobileOpen(false); }}>Series</button>
@@ -188,7 +188,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
                             <Search className="w-6 h-6 mx-4"/>
                         </div>
 
-                        <div className="w-full flex items-center justify-between pt-2">
+                        <div className="w-full flex items-center md:justify-center justify-between pt-2">
                             <DropdownMenu>
                                 <DropdownMenuTrigger>
                                     <div className="flex items-center gap-3">
