@@ -1,11 +1,13 @@
-import { Card } from "@/components/ui/card"
+import { VideoCard } from "@/components/VideoCard"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useModal } from "@/hooks/use-modal-store"
 
 import { Banner } from "./Banner"
 import { VideoModal } from "./modals/video-modal"
 import { useOutletContext } from "react-router"
-import { ChevronRight, ChevronLeft } from "lucide-react"
+import { ChevronRight, ChevronLeft, Plus } from "lucide-react"
 import { useRef } from "react"
+import { Button } from "./ui/button"
 
 type VideoData = {
     id: string
@@ -23,7 +25,11 @@ export function VideoLists() {
   
   const rowViewportsRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  
+  const { onOpen } = useModal();
+
+    function handleClick(){
+    onOpen("party", "")
+  }
 
   if(videos.length === 0){
     return(
@@ -78,7 +84,7 @@ export function VideoLists() {
               <div className="flex gap-2 md:gap-3 px-14 justify-center">
                 {rowVideos.map((video, vidIdx) => (
                   <div key={video.id || vidIdx} className="min-w-[12rem] sm:min-w-[18rem] md:min-w-[24rem] lg:min-w-[30rem]">
-                    <Card videoData={video} />
+                    <VideoCard videoData={video} />
                   </div>
                 ))}
               </div>
@@ -95,6 +101,9 @@ export function VideoLists() {
           </div>
         </div>
       ))}
+      <Button className="absolute bg-[#3B82F6] hover:bg-[#06B6D4] right-8 bottom-18 w-[4rem] h-[4rem] rounded-md cursor-pointer z-50" onClick={handleClick}>
+        <Plus className="w-[3rem] h-[3rem]"/>
+      </Button>
     </div>
   )
 }
