@@ -19,7 +19,7 @@ type RoomStates = {
 @WebSocketGateway(80, {
   namespace: 'WatchParty',
   cors: {
-    origin: '*', // Allow all for testing
+    origin: '*',
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {

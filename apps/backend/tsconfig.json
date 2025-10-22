@@ -25,6 +25,7 @@
   "exclude": [
     "*/*.spec.ts",
     "./dist/**/*",
-    "./src/gateways/**/*"
+    "./src/gateways/**/*",
+    "./src/modules/party/**/*"
   ]
 }

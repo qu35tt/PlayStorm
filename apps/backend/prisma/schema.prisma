@@ -16,9 +16,6 @@ model User {
   createdAt    DateTime       @default(now())
   lastUpdate   DateTime       @updatedAt
   avatarUrl    String?
-  messages     Messages[]
-  party        Party[]
-  partyMembers PartyMembers[]
 }
 
 model Video {
@@ -28,36 +25,10 @@ model Video {
   URL       String
   thumbnail String
   banner    String
-  videotype      VideoType
   genre_id  String
+  videotype VideoType
   favorites Favorites[]
   genre     Genre       @relation(fields: [genre_id], references: [id])
-}
-
-model Party {
-  id           String         @id @default(uuid())
-  owner_id     String
-  messages     Messages[]
-  owner        User           @relation(fields: [owner_id], references: [id])
-  partyMembers PartyMembers[]
-}
-
-model PartyMembers {
-  id       String @id @default(uuid())
-  user_id  String
-  party_id String
-  party    Party  @relation(fields: [party_id], references: [id])
-  user     User   @relation(fields: [user_id], references: [id])
-}
-
-model Messages {
-  id        String   @id @default(uuid())
-  party_id  String
-  sender_id String
-  text      String
-  createdAt DateTime @default(now())
-  party     Party    @relation(fields: [party_id], references: [id])
-  sender    User     @relation(fields: [sender_id], references: [id])
 }
 
 model Genre {
