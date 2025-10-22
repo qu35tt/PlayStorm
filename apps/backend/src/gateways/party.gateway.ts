@@ -1,3 +1,4 @@
+import { UseGuards } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -36,12 +37,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('test')
-  handleTest(@MessageBody() data: { text: string }, @ConnectedSocket() client: Socket)  {
-    console.log('Received from client:', data.text);
-    this.server.to("test room").emit('test', data.text)
-  }
-
   @SubscribeMessage('join')
   handleJoin(@ConnectedSocket() client: Socket, @MessageBody() payload: { roomId: string; videoId: string }) {
     const { roomId, videoId } = payload;
@@ -65,7 +60,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       calculatedTime += timeElapsed;
     }
 
-    client.emit('initpartystate', { ...state, currentTime: calculatedTime});
+    client.emit('initpartystate', { ...state, currentTime: calculatedTime, user: client.data});
+    this.server.to(roomId).emit('userJoined')
+
+    //TODO: získání uživatelských dat pro zaslání zpět,; abych mohl získat data o uživatelích a zobrazit je v UI
   }
 
   @SubscribeMessage('playbackAction')
