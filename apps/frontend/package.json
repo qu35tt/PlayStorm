@@ -37,6 +37,7 @@
     "tailwindcss": "^4.1.13",
     "tailwindcss-patterns": "^0.1.2",
     "uploadthing": "^7.7.4",
+    "uuid": "^13.0.0",
     "zod": "^4.1.9",
     "zustand": "^5.0.8"
   },

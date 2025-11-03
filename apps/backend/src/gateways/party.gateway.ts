@@ -8,8 +8,6 @@ import {
   OnGatewayDisconnect,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { timeStamp } from 'console';
-import { throwError } from 'rxjs';
 import { Server, Socket } from 'socket.io';
 
 type RoomStates = {
@@ -18,6 +16,11 @@ type RoomStates = {
   currentTime: number,
   lastUpdateTimestamp: number
 }
+
+type User = {
+  username: string;
+  avatarUrl: string;
+};
 
 @WebSocketGateway(80, {
   namespace: 'WatchParty',
@@ -40,8 +43,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('join')
-  handleJoin(@ConnectedSocket() client: Socket, @MessageBody() payload: { roomId: string; videoId: string }) {
-    const { roomId, videoId } = payload;
+  async handleJoin(@ConnectedSocket() client: Socket, @MessageBody() payload: { roomId: string; videoId: string, user: User }) {
+    const { roomId, videoId, user } = payload;
+
+    client.data.user = user;
+    client.data.roomId = roomId;
+
     client.join(roomId);
 
     let state = this.roomStates.get(roomId);
@@ -62,10 +69,44 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       calculatedTime += timeElapsed;
     }
 
-    client.emit('initpartystate', { ...state, currentTime: calculatedTime, user: client.data});
-    this.server.to(roomId).emit('userJoined')
+    const socketsInRoom = await this.server.in(roomId).fetchSockets();
+
+    // Map them to user data, *excluding* the new client
+    const usersInRoom = socketsInRoom
+      .filter(socket => socket.id !== client.id)
+      .map(socket => {
+        return {
+          socketId: socket.id,
+          ...socket.data.user
+        };
+      });
+
+    client.emit('initpartystate', { ...state, currentTime: calculatedTime, user: usersInRoom});
+    client.to(roomId).emit('userJoined', { 
+      socketId: client.id,
+      ...user
+     })
 
     //TODO: získání uživatelských dat pro zaslání zpět,; abych mohl získat data o uživatelích a zobrazit je v UI
+  }
+
+  @SubscribeMessage('listRoomUsers')
+  async handleRoomList(@ConnectedSocket() client: Socket, @MessageBody() payload: {roomId: string}) {
+    const { roomId } = payload;
+
+    // 1. Fetch all socket instances in the room
+    const socketsInRoom = await this.server.in(roomId).fetchSockets();
+
+    // 2. Map over the sockets to get their user data
+    const users = socketsInRoom.map(socket => {
+      return {
+        socketId: socket.id,
+        ...socket.data.user // Get the user data you stored in 'handleJoin'
+      };
+    });
+
+    // 3. Emit the list back *only* to the client who asked
+    client.emit('roomUsersList', users);
   }
 
   @SubscribeMessage('startPlayback')
