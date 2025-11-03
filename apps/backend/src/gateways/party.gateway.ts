@@ -8,6 +8,8 @@ import {
   OnGatewayDisconnect,
   ConnectedSocket,
 } from '@nestjs/websockets';
+import { timeStamp } from 'console';
+import { throwError } from 'rxjs';
 import { Server, Socket } from 'socket.io';
 
 type RoomStates = {
@@ -64,6 +66,32 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(roomId).emit('userJoined')
 
     //TODO: získání uživatelských dat pro zaslání zpět,; abych mohl získat data o uživatelích a zobrazit je v UI
+  }
+
+  @SubscribeMessage('startPlayback')
+  handlePlayback(@ConnectedSocket() client: Socket, @MessageBody() payload: { roomId: string, videoId: string }) {
+    const { roomId, videoId } = payload;
+    let state = this.roomStates.get(roomId);
+
+    if(!state){
+      client.disconnect();
+      return;
+    }
+
+    state.videoId = videoId;
+    state.currentTime = 0;
+    state.isPlaying = true;
+    state.lastUpdateTimestamp = Date.now();
+
+    this.roomStates.set(roomId, state);
+
+    client.to(roomId).emit('playbackStarted', {
+      videoId: state.videoId,
+      currentTime: state.currentTime,
+      timeStamp: state.lastUpdateTimestamp
+    });
+
+    client.emit('playbackStartedSuccesfully')
   }
 
   @SubscribeMessage('playbackAction')
