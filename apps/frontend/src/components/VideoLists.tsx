@@ -28,8 +28,13 @@ export function VideoLists() {
   const { onOpen } = useModal();
 
     function handleClick(){
-    onOpen("party", "")
-  }
+      onOpen("party", "")
+
+      /* 
+      TODO: Připojení na socket server a handlování spouštění videa a následní synchronizace.
+      ! Zobrazování uživatelů do modalu, nejspíše tohle handlování udělám v Modalu.
+      */
+    }
 
   if(videos.length === 0){
     return(
