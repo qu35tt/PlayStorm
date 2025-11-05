@@ -1,5 +1,7 @@
 import { useModal } from "@/hooks/use-modal-store";
 import { useNavigate } from "react-router"
+import { useSocket } from "@/context/socket-context";
+import { usePartyStore } from "@/stores/partyStore";
 
 import {
   Dialog,
@@ -29,6 +31,8 @@ export function VideoModal(){
   const user = useUserStore();
   const { isOpen, onClose, type, videoId } = useModal();
   const [data, setData] = useState<videoData | null>();
+  const socket = useSocket();
+  const party = usePartyStore()
 
   const isModalOpen = isOpen && type === "video";
 
@@ -46,6 +50,11 @@ export function VideoModal(){
 
   function handleClick(){
     nav(`/watch/${videoId}`);
+    
+    if(party.roomId){
+      socket.emit("startPlayback", { roomId: party.roomId, videoId: videoId });
+    }
+
     onClose();
   }
 

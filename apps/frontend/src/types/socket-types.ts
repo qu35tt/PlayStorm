@@ -50,7 +50,7 @@ export interface ClientToServerEvents {
 
   startPlayback: (payload: {
     roomId: string;
-    videoId: string;
+    videoId: string | null;
   }) => void;
 
   playbackAction: (payload: {
@@ -60,4 +60,17 @@ export interface ClientToServerEvents {
   }) => void;
 
   listRoomUsers: (payload: { roomId: string }) => void;
+}
+
+export type PlaybackState = {
+ videoId: string,
+ isPlaying: boolean,
+ currentTime: number,
+ lastUpdateTimestamp: number
+}
+
+export type videoState = {
+  videoId: string,
+  currentTime: number,
+  timeStamp: number
 }

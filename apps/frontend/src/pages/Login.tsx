@@ -18,6 +18,7 @@ export function Login() {
 
     return(
         <div className="w-screen h-screen relative" onLoad={resetData}>
+            
             <Rain />
             <img
                 src="/logo.svg"
