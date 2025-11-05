@@ -40,6 +40,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
+    this.server.emit("userLeft", client.id);
   }
 
   @SubscribeMessage('join')
@@ -81,7 +82,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         };
       });
 
-    client.emit('initpartystate', { ...state, currentTime: calculatedTime, user: usersInRoom});
+    client.emit('initpartystate', { ...state, currentTime: calculatedTime, users: usersInRoom});
     client.to(roomId).emit('userJoined', { 
       socketId: client.id,
       ...user
@@ -90,24 +91,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     //TODO: získání uživatelských dat pro zaslání zpět,; abych mohl získat data o uživatelích a zobrazit je v UI
   }
 
-  @SubscribeMessage('listRoomUsers')
-  async handleRoomList(@ConnectedSocket() client: Socket, @MessageBody() payload: {roomId: string}) {
-    const { roomId } = payload;
-
-    // 1. Fetch all socket instances in the room
-    const socketsInRoom = await this.server.in(roomId).fetchSockets();
-
-    // 2. Map over the sockets to get their user data
-    const users = socketsInRoom.map(socket => {
-      return {
-        socketId: socket.id,
-        ...socket.data.user // Get the user data you stored in 'handleJoin'
-      };
-    });
-
-    // 3. Emit the list back *only* to the client who asked
-    client.emit('roomUsersList', users);
-  }
 
   @SubscribeMessage('startPlayback')
   handlePlayback(@ConnectedSocket() client: Socket, @MessageBody() payload: { roomId: string, videoId: string }) {

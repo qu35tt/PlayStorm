@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useUserStore } from '../stores/userStore'
 import axios from "axios";
 import { toast } from "sonner"
+import { useSocket } from "@/context/socket-context";
 
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
 
     const { userCredentials, setUser, clearUser }= useUser();
     const { onOpen } = useModal();
+    const socket = useSocket();
 
     const base = "font-extrabold cursor-pointer hover:scale-112 hover:bg-gray-500/20 p-4 rounded-lg ease-in-out transition duration-250";
     const activeClass = "underline decoration-4 underline-offset-8 decoration-white"
@@ -54,6 +56,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
                 
             nav("/");
             toast.success("Logged out succesfully!", {duration: 2000})
+            socket.disconnect();
         })
         .catch(function (err){
             console.error(err)

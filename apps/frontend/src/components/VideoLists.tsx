@@ -8,6 +8,7 @@ import { useOutletContext } from "react-router"
 import { ChevronRight, ChevronLeft, Plus } from "lucide-react"
 import { useRef } from "react"
 import { Button } from "./ui/button"
+import { StartPartyButton } from "./startPartyButton";
 
 type VideoData = {
     id: string
@@ -27,14 +28,14 @@ export function VideoLists() {
 
   const { onOpen } = useModal();
 
-    function handleClick(){
-      onOpen("party", "")
+    // function handleClick(){
+    //   onOpen("party", "")
 
-      /* 
-      TODO: Připojení na socket server a handlování spouštění videa a následní synchronizace.
-      ! Zobrazování uživatelů do modalu, nejspíše tohle handlování udělám v Modalu.
-      */
-    }
+    //   /* 
+    //   TODO: Připojení na socket server a handlování spouštění videa a následní synchronizace.
+    //   ! Zobrazování uživatelů do modalu, nejspíše tohle handlování udělám v Modalu.
+    //   */
+    // }
 
   if(videos.length === 0){
     return(
@@ -106,9 +107,10 @@ export function VideoLists() {
           </div>
         </div>
       ))}
-      <Button className="absolute bg-[#3B82F6] hover:bg-[#06B6D4] right-8 bottom-18 w-[4rem] h-[4rem] rounded-md cursor-pointer z-50" onClick={handleClick}>
+      {/* <Button className="absolute bg-[#3B82F6] hover:bg-[#06B6D4] right-8 bottom-18 w-[4rem] h-[4rem] rounded-md cursor-pointer z-50" onClick={handleClick}>
         <Plus className="w-[3rem] h-[3rem]"/>
-      </Button>
+      </Button> */}
+      <StartPartyButton videoId=""/>
     </div>
   )
 }
