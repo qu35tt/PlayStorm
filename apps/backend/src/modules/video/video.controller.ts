@@ -2,6 +2,7 @@ import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { AuthGuard } from "../auth.guard"
 
+
 @Controller('video')
 export class VideoController {
   constructor(private readonly videoService: VideoService) {}
@@ -27,5 +28,10 @@ export class VideoController {
   @Get('data/:id')
   getVideoData(@Param('id') id:string){
     return this.videoService.getVideoData(id);
+  }
+
+  @Get('test/consumet')
+  consumetTest() {
+    return this.videoService.consumetTest();
   }
 }

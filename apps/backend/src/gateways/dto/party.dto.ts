@@ -1,0 +1,48 @@
+import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+
+export class PartyUser{
+    @IsString()
+    @IsNotEmpty()
+    username: string
+
+    @IsString()
+    @IsNotEmpty()
+    avatarUrl: string
+}
+
+export class JoinParty{
+    @IsString()
+    @IsNotEmpty()
+    username: string
+
+    @IsString()
+    @IsNotEmpty()
+    avatarUrl: string
+
+    @IsString()
+    @IsNotEmpty()
+    roomId: string
+}
+
+export class DisconnectResult {
+    @IsString()
+    @IsNotEmpty()
+    roomId: string
+
+    user: PartyUser
+
+    updatedUserList: PartyUser[]
+}
+
+export class PlaybackData {
+    @IsString()
+    @IsNotEmpty()
+    videoId: string
+
+    @IsNumber()
+    @IsNotEmpty()
+    current_time: number
+
+    @IsNotEmpty()
+    last_update: Date
+}

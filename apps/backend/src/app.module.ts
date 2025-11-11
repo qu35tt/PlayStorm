@@ -4,12 +4,12 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
-import { EventsGateway } from './gateways/party.gateway';
 import { VideoModule } from './modules/video/video.module';
+import { PartyModule } from './gateways/party.module';
 
 @Module({
-  imports: [VideoModule ,AuthModule, UserModule, PrismaModule],
+  imports: [VideoModule ,AuthModule, UserModule, PrismaModule, PartyModule],
   controllers: [AppController],
-  providers: [AppService, EventsGateway],
+  providers: [AppService],
 })
 export class AppModule {}

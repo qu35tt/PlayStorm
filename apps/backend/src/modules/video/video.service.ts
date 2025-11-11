@@ -93,4 +93,16 @@ export class VideoService {
             throw new InternalServerErrorException(err)
         }
     }
+
+    async consumetTest() {
+        try {
+            let anime = new ANIME.AnimePahe();
+            const results = await anime.fetchAnimeInfo("adb84358-8fec-fe80-1dc5-ad6218421dc1");
+            console.log("Search completed:", results);
+            return results;
+        } catch (err) {
+            console.error("Error in consumetTest:", err);
+            throw new InternalServerErrorException("Failed to fetch anime data");
+        }
+    }
 }
