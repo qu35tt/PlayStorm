@@ -1,66 +1,146 @@
 import { create } from 'zustand';
-import type { RoomUser, PlaybackState } from '../types/socket-types'; // Make sure this path is correct
+import { io, Socket } from 'socket.io-client';
+import type {
+  ClientToServerEvents,
+  ServerToClientEvents,
+  PartyUser,
+} from '../types/socket-types';
 
-// This should match your server's 'RoomStates' type
-
-
-type PartyStore = {
+export type PartyStore = {
+  socket: Socket | null;
+  isConnected: boolean;
+  user: PartyUser | null;
   roomId: string | null;
-  users: RoomUser[];
-  playbackState: PlaybackState | null;
-  setParty: (payload: { roomId: string; users: RoomUser[] } & PlaybackState) => void;
-  setPlaybackState: (payload: Partial<PlaybackState>) => void;
-  addUser: (user: RoomUser) => void;
-  removeUser: (socketId: string) => void;
-  clearParty: () => void;
+  members: PartyUser[];
+  error: string | null;
+  setUser: (user: PartyUser) => void;
+  initializeSocket: () => void;
+  disconnect: () => void;
+  createParty: () => void;
+  joinParty: (roomId: string) => void;
+  leaveParty: () => void;
 };
 
-const initialState = {
+const SOCKET_URL = 'http://localhost:80/Party';
+
+export const usePartyStore = create<PartyStore>((set, get) => ({
+  socket: null,
+  isConnected: false,
+  user: null,
   roomId: null,
-  users: [],
-  playbackState: null,
-};
+  members: [],
+  error: null,
 
-export const usePartyStore = create<PartyStore>((set) => ({
-  ...initialState,
+  setUser: (user) => {
+    set({ user });
+  },
 
-  // Called by 'initpartystate'
-  setParty: (payload) => set({
-    roomId: payload.roomId,
-    users: payload.users,
-    playbackState: {
-      videoId: payload.videoId,
-      isPlaying: payload.isPlaying,
-      currentTime: payload.currentTime,
-      lastUpdateTimestamp: payload.lastUpdateTimestamp,
+  initializeSocket: () => {
+    if (get().socket) {
+      return;
     }
-  }),
 
-    // Added to the type and fixed to handle partial payloads
-  setPlaybackState: (payload) =>
-    set((state) => ({
-      playbackState: state.playbackState
-        ? { ...state.playbackState, ...payload }
-        : {
-            videoId: payload.videoId || '',
-            currentTime: payload.currentTime || 0,
-            isPlaying: payload.isPlaying || false,
-            lastUpdateTimestamp: payload.lastUpdateTimestamp || Date.now(),
-          },
-    })),
+    const user = get().user;
+    if (!user) {
+      set({ error: 'User info must be set before connecting.' });
+      return;
+    }
 
-  addUser: (user) =>
-    set((state) =>
-      state.users.some((u) => u.socketId === user.socketId)
-        ? state
-        : { users: [...state.users, user] }
-    ),
+    const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+      SOCKET_URL,
+      {
+        autoConnect: false,
+      },
+    );
 
-  // Called by 'userLeft'
-  removeUser: (socketId) => set((state) => ({
-    users: state.users.filter((u) => u.socketId !== socketId)
-  })),
+    socket.on('connect', () => {
+      set({ isConnected: true, error: null });
+    });
 
-  // Called on disconnect
-  clearParty: () => set(initialState),
+    socket.on('disconnect', (reason) => {
+      set({
+        isConnected: false,
+        error: `Disconnected: ${reason}`,
+        roomId: null,
+        members: [],
+      });
+    });
+
+    socket.on('party_created', ({ roomId }) => {
+      const currentUser = get().user;
+      set({
+        roomId,
+        members: currentUser ? [currentUser] : [],
+      });
+    });
+
+    socket.on('new_user_joined', ({ userInfo }) => {
+      console.log("user connected");
+      set((state) => ({
+        members: [...state.members, userInfo],
+      }));
+    });
+
+    socket.on('user_left', (payload) => {
+      console.log("user_left", payload?.userInfo)
+      if (payload && payload.userInfo) {
+        
+        set((state) => ({
+          members: state.members.filter(
+            (m) => m.id != payload.userInfo.id,
+          ),
+        }));
+      } else {
+        console.warn(
+          "Received 'user_left' event with no payload. Member list may be inaccurate.",
+        );
+      }
+    });
+
+    socket.connect();
+    set({ socket });
+  },
+
+  disconnect: () => {
+    const socket = get().socket;
+    if (socket) {
+      socket.disconnect();
+    }
+    set({
+      socket: null,
+      isConnected: false,
+      roomId: null,
+      members: [],
+    });
+  },
+
+  createParty: () => {
+    const { socket, user } = get();
+    if (socket && user) {
+      socket.emit('create_party', user);
+    } else {
+      set({ error: 'Cannot create party. Not connected or no user info.' });
+    }
+  },
+
+  joinParty: (roomId) => {
+    const { socket, user } = get();
+    if (socket && user) {
+      socket.emit('join_party', { ...user, roomId });
+      set({
+        roomId,
+        members: [user],
+      });
+    } else {
+      set({ error: 'Cannot join party. Not connected or no user info.' });
+    }
+  },
+
+  leaveParty: () => {
+    const { socket } = get();
+    if (socket) {
+      set({ roomId: null, members: [] });
+      socket.emit('leave_party');
+    }
+  },
 }));
