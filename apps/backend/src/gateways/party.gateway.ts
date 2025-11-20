@@ -66,6 +66,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.roomService.addUserToRoom(roomId, userInfo, client.id);
 
+    const allMembersInRoom = this.roomService.getUsersInRoom(roomId); 
+
+    client.emit('party_joined', { members: allMembersInRoom });
+
     client.to(roomId).emit('new_user_joined', { userInfo })
   }
 

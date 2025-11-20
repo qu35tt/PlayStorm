@@ -19,4 +19,5 @@ export interface ServerToClientEvents {
   party_created: (payload: { roomId: string }) => void;
   new_user_joined: (payload: { userInfo: PartyUser }) => void;
   user_left: (payload?: { userInfo: PartyUser }) => void;
+  party_joined: (payload?: {members: PartyUser[]}) => void;
 }

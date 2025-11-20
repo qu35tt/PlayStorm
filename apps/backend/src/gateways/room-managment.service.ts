@@ -14,6 +14,8 @@ export class RoomManagmentService {
 
         this.socketToRoom.set(socketId, { roomId, user })
 
+        console.log("connected users: ", this.socketToRoom.size)
+
         return Array.from(userSet);
     }
 
@@ -54,5 +56,13 @@ export class RoomManagmentService {
             user,
             updatedUserList: Array.from(userSet)
         }
+    }
+
+        public getUsersInRoom(roomId: string): PartyUser[] {
+        const userSet = this.rooms.get(roomId);
+        if (!userSet) {
+            return []; // Return empty array if room is unknown
+        }
+        return Array.from(userSet);
     }
 }
