@@ -1,14 +1,14 @@
 import { usePartyStore } from '../../stores/partyStore';
 import { useModal } from "../../hooks/use-modal-store";
 import { MemberCard } from "../MemberCard";
-import { Dialog, DialogContent, DialogHeader } from "../ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from "../ui/dialog";
 import { Button } from '../ui/button';
 
   import { useUser } from "../../context/user-context";
   import { useUserStore } from "../../stores/userStore";
 
 export function PartyModal() {
-  const { isOpen, onClose, type } = useModal();
+  const { isOpen, onClose, onOpen, type } = useModal();
   const { userCredentials } = useUser();
   const { userId } = useUserStore();
 
@@ -21,38 +21,53 @@ export function PartyModal() {
       setUser,
       initializeSocket,
       createParty,
+      leaveParty,
+      disconnect
     } = usePartyStore();
 
-
-    function handleCreateParty() {
+    function socketConnection() {
       if(!userCredentials || !userId) {
         console.warn("User is not logged in");
         return;
       }
 
       if(!currentUser) {
+        console.log("user credentials: ", {...userCredentials, id: userId})
         setUser({...userCredentials, id: userId})
       }
 
       initializeSocket();
+    }
 
+    function socketDisconnection() {
+      console.log("socketDisconnection");
+      
+      leaveParty();
+      disconnect();
+    }
+
+    function handleCreateParty() {
+      socketConnection();
       createParty();
     }
 
     function handleJoinParty() {
-      //here i open join party modal;
-
-      console.log("Join party modal called!")
+      socketConnection();
+      onOpen("joinParty", "");
     }
+
+    function handleLeaveParty() {
+      socketDisconnection();
+    } 
 
   if(roomId != null) {
     return (
       <Dialog open={isModalOpen} onOpenChange={onClose}>
         <DialogContent
           forceMount
-          className="w-3/4 h-3/4 p-4"
+          className="w-3/4 h-3/4 p-4 flex flex-col"
         >
-          <DialogHeader>
+          <DialogHeader className="flex-grow">
             <h2
               className="font-bold text-3xl text-center"
             >
@@ -67,7 +82,7 @@ export function PartyModal() {
               className="h-full flex flex-row space-x-4"
             >
               <div
-                className="w-full h-full border-red-900 border-1 p-4 space-y-2 overflow-y-auto"
+                className="w-full h-full flex flex-col p-4 space-y-2 overflow-y-auto"
               >
                 {members.map((member) => (
                   <MemberCard
@@ -84,6 +99,9 @@ export function PartyModal() {
               </div>
             </div>
           </DialogHeader>
+          <DialogFooter className="w-full">
+            <Button className="w-full" onClick={handleLeaveParty}>Leave Party</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     )}

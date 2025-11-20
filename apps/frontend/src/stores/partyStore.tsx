@@ -17,7 +17,7 @@ export type PartyStore = {
   initializeSocket: () => void;
   disconnect: () => void;
   createParty: () => void;
-  joinParty: (roomId: string) => void;
+  joinParty: (roomId: string) => Promise<void>;
   leaveParty: () => void;
 };
 
@@ -75,14 +75,12 @@ export const usePartyStore = create<PartyStore>((set, get) => ({
     });
 
     socket.on('new_user_joined', ({ userInfo }) => {
-      console.log("user connected");
       set((state) => ({
         members: [...state.members, userInfo],
       }));
     });
 
     socket.on('user_left', (payload) => {
-      console.log("user_left", payload?.userInfo)
       if (payload && payload.userInfo) {
         
         set((state) => ({
@@ -96,6 +94,12 @@ export const usePartyStore = create<PartyStore>((set, get) => ({
         );
       }
     });
+
+    socket.on('party_joined', (payload) => {
+      set({
+        members: payload?.members
+      })
+    })
 
     socket.connect();
     set({ socket });
@@ -124,16 +128,22 @@ export const usePartyStore = create<PartyStore>((set, get) => ({
   },
 
   joinParty: (roomId) => {
+    return new Promise<void>((resolve, reject) => {
     const { socket, user } = get();
+    console.log(user);
     if (socket && user) {
       socket.emit('join_party', { ...user, roomId });
       set({
         roomId,
-        members: [user],
+        members: [user], 
       });
+      resolve();
     } else {
-      set({ error: 'Cannot join party. Not connected or no user info.' });
+      const errorMsg = 'Cannot join party. Not connected or no user info.';
+      set({ error: errorMsg });
+      reject(new Error(errorMsg));
     }
+    })
   },
 
   leaveParty: () => {
