@@ -3,6 +3,7 @@ import { useModal } from "../../hooks/use-modal-store";
 import { MemberCard } from "../MemberCard";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "../ui/dialog";
 import { Button } from '../ui/button';
+import { toast } from 'sonner';
 
   import { useUser } from "../../context/user-context";
   import { useUserStore } from "../../stores/userStore";
@@ -49,6 +50,7 @@ export function PartyModal() {
     function handleCreateParty() {
       socketConnection();
       createParty();
+      toast.success("Party byla úspěšně vytvořena!");
     }
 
     function handleJoinParty() {

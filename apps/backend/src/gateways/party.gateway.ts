@@ -1,4 +1,3 @@
-import { UseGuards } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -10,7 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from "uuid";
-import type { JoinParty, PartyUser } from './dto';
+import type { JoinParty, PartyUser, PlaybackData, PlayerAction } from './dto';
 import { RoomManagmentService } from "./room-managment.service"
 
 @WebSocketGateway(80, {
@@ -82,5 +81,19 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     
     client.to(roomId).emit('user_left', { userInfo })
     client.leave(roomId);
+  }
+
+  @SubscribeMessage('start_playback')
+  async handleStartPlayback(@ConnectedSocket() client: Socket, @MessageBody() data: PlaybackData) {
+    let roomId = client.data.roomId;
+    
+    client.to(roomId).emit('start_playback', {videoId: data.videoId, current_time: data.current_time})
+  }
+
+  @SubscribeMessage('playback_action')
+  async handlePlaybackAction(@ConnectedSocket() client: Socket, @MessageBody() data: PlaybackData, @MessageBody() action: PlayerAction) {
+    let roomId = client.data.roomId;
+
+    client.to(roomId).emit('sync_playback', { action: action })
   }
 }

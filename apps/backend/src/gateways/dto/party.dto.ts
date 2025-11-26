@@ -46,3 +46,10 @@ export class PlaybackData {
     @IsNotEmpty()
     last_update: Date
 }
+
+export enum PlayerAction {
+  PLAY = 'PLAY',
+  PAUSE = 'PAUSE',
+  SEEK_FORWARD = 'SEEK_FORWARD',
+  SEEK_BACKWARD = 'SEEK_BACKWARD',
+}
