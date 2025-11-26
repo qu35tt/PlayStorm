@@ -8,7 +8,7 @@ function App() {
   return (
     <>
       <SocketProvider>
-        <SocketManager />
+        {/* <SocketManager /> */}
         <RouterProvider router={router} />
         <Toaster position="top-center" richColors/>
       </SocketProvider>

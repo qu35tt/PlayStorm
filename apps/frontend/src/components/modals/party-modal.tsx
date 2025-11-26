@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
   import { useUser } from "../../context/user-context";
   import { useUserStore } from "../../stores/userStore";
+import { useEffect } from 'react';
 
 export function PartyModal() {
   const { isOpen, onClose, onOpen, type } = useModal();
@@ -23,10 +24,9 @@ export function PartyModal() {
       initializeSocket,
       createParty,
       leaveParty,
-      disconnect
     } = usePartyStore();
 
-    function socketConnection() {
+    async function socketConnection() {
       if(!userCredentials || !userId) {
         console.warn("User is not logged in");
         return;
@@ -40,17 +40,22 @@ export function PartyModal() {
       initializeSocket();
     }
 
+    socketConnection();
+
     function socketDisconnection() {
       console.log("socketDisconnection");
       
       leaveParty();
-      disconnect();
     }
 
-    function handleCreateParty() {
-      socketConnection();
-      createParty();
-      toast.success("Party byla úspěšně vytvořena!");
+    async function handleCreateParty() {
+      try {
+        await createParty();
+        toast.success("Party byla úspěšně vytvořena!");
+      } catch(err) {
+        console.log(err);
+      }
+      
     }
 
     function handleJoinParty() {
@@ -60,7 +65,12 @@ export function PartyModal() {
 
     function handleLeaveParty() {
       socketDisconnection();
-    } 
+    }
+
+    useEffect(() => {
+      console.log("Room ID changed:", roomId);
+      socketConnection();
+    }, []);
 
   if(roomId != null) {
     return (

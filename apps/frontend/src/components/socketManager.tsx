@@ -2,9 +2,12 @@ import { useEffect } from 'react';
 import { useSocket } from '../context/socket-context';
 import { usePartyStore } from '../stores/partyStore';
 import type { PartyUser } from '../types/socket-types';
+import { useNavigate } from 'react-router';
 
 export const SocketManager = () => {
   const socket = useSocket();
+  const nav = useNavigate();
+
   useEffect(() => {
     const { user, roomId, initializeSocket } = usePartyStore.getState();
 
@@ -17,6 +20,7 @@ export const SocketManager = () => {
     if (!socket) return;
 
     const onPartyCreated = ({ roomId }: { roomId: string }) => {
+      console.log("Party created event received. Room ID:", roomId);
       usePartyStore.getState()._handlePartyCreated(roomId);
     };
 
@@ -38,7 +42,7 @@ export const SocketManager = () => {
 
     const onStartPlayback = (payload?: { videoId: string }) => {
       usePartyStore.setState({ videoId: payload?.videoId });
-      usePartyStore.getState().start_playback();
+      usePartyStore.getState().start_playback(nav);
     };
 
     socket.on('party_created', onPartyCreated);
