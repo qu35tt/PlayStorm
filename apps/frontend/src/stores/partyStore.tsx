@@ -1,9 +1,12 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type {
   PartyUser,
 } from '../types/socket-types';
 import { socket } from '../lib/SocketInstance'; // Import the singleton socket
+
+
+
 
 
 export type PartyStore = {
@@ -16,7 +19,7 @@ export type PartyStore = {
   setUser: (user: PartyUser) => void;
   initializeSocket: () => void;
   disconnect: () => void;
-  createParty: () => void;
+  createParty: () => Promise<void>;
   joinParty: (roomId: string) => Promise<void>;
   leaveParty: () => void;
   // Actions to be called by SocketManager
@@ -24,7 +27,7 @@ export type PartyStore = {
   _handleNewUserJoined: (userInfo: PartyUser) => void;
   _handleUserLeft: (userInfo: PartyUser) => void;
   _handlePartyJoined: (members: PartyUser[]) => void;
-  start_playback: () => void;
+  start_playback: (navigate: any) => void;
 };
 
 type PersistedData = {
@@ -34,7 +37,6 @@ type PersistedData = {
 }
 
 export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedData]]>(
-
   persist(
     (set, get) => ({
       isConnected: false,
@@ -75,12 +77,15 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       },
 
       createParty: () => {
-        const { user } = get();
-        if (socket.connected && user) {
-          socket.emit('create_party', user);
-        } else {
-          set({ error: 'Cannot create party. Not connected or no user info.' });
-        }
+        return new Promise<void>((resolve, reject) => {
+          const { user } = get();
+          if (socket.connected && user) {
+            socket.emit('create_party', user);
+            resolve();
+          } else {
+            set({ error: 'Cannot create party. Not connected or no user info.' });
+            reject(new Error(socket.connected + ' ' + user));
+          }})
       },
 
       joinParty: (roomId) => {
@@ -100,9 +105,13 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
 
       leaveParty: () => {
         const { roomId } = get();
+        console.log("roomId: " + roomId)
+        console.log("socket: " + socket)
+        
         if (socket && roomId) {
-          set({ roomId: null, members: [] });
+          set({ roomId: null, members: [], videoId: null });
           socket.emit('leave_party', roomId); // Pass the roomId to the server
+          console.log("Leaving party")
         }
       },
 
@@ -113,12 +122,20 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
           roomId,
           members: currentUser ? [currentUser] : [],
         });
+        
       },
 
       _handleNewUserJoined: (userInfo) => {
-        set((state) => ({
-          members: [...state.members, userInfo],
-        }));
+        set((state) => {
+          const userExists = state.members.some((member) => member.id === userInfo.id);
+          if (userExists) {
+            return {};
+          }
+
+          return {
+            members: [...state.members, userInfo],
+          };
+        });
       },
 
       _handleUserLeft: (userInfo) => {
@@ -131,11 +148,10 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
         set({ members });
       },
 
-      start_playback: () => {
+      start_playback: (navigate: any) => {
         const { videoId } = get();
-        console.log("The method was called");
         if (videoId) {
-          window.location.href = `http://localhost:5173/watch/${videoId}`;
+           navigate(`/watch/${videoId}`)
         } else {
           console.error("Cannot start playback: videoId is not set.");
         }
@@ -143,6 +159,7 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
     }),
     {
       name: 'party-store',
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
         user: state.user || null,
         roomId: state.roomId || null,

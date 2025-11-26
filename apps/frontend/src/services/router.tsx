@@ -6,6 +6,7 @@ import { VideoPlayer } from "../pages/VideoPlayer"
 import { VideoLists } from "../components/VideoLists"
 import { PrivateRoute } from "../lib/PrivateRoute"
 import { TestJoinComponent } from "../components/testJoinComponent"
+import { SocketManager } from "@/components/socketManager";
 
 export const router = createBrowserRouter([
   {
@@ -16,14 +17,19 @@ export const router = createBrowserRouter([
     path: "/home",
     element: (
       <PrivateRoute>
-        <Home />
+        <SocketManager />
+          <Home />
       </PrivateRoute>
     ),
     children: [
       {
         index: true,
-        element: <VideoLists />
-      },
+        element: (
+        <>
+          <SocketManager />
+          <VideoLists />
+        </>
+      )},
     ],
   },
   {
