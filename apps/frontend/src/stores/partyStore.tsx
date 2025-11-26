@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { io, Socket } from 'socket.io-client';
 import type {
   ClientToServerEvents,
@@ -6,11 +7,12 @@ import type {
   PartyUser,
 } from '../types/socket-types';
 
-export type PartyStore = {
+type PartyStore = {
   socket: Socket | null;
   isConnected: boolean;
   user: PartyUser | null;
   roomId: string | null;
+  videoId: string | null;
   members: PartyUser[];
   error: string | null;
   setUser: (user: PartyUser) => void;
@@ -19,138 +21,179 @@ export type PartyStore = {
   createParty: () => void;
   joinParty: (roomId: string) => Promise<void>;
   leaveParty: () => void;
+  start_playback: () => void;
 };
 
 const SOCKET_URL = 'http://localhost:80/Party';
 
-export const usePartyStore = create<PartyStore>((set, get) => ({
-  socket: null,
-  isConnected: false,
-  user: null,
-  roomId: null,
-  members: [],
-  error: null,
-
-  setUser: (user) => {
-    set({ user });
-  },
-
-  initializeSocket: () => {
-    if (get().socket) {
-      return;
-    }
-
-    const user = get().user;
-    if (!user) {
-      set({ error: 'User info must be set before connecting.' });
-      return;
-    }
-
-    const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-      SOCKET_URL,
-      {
-        autoConnect: false,
-      },
-    );
-
-    socket.on('connect', () => {
-      set({ isConnected: true, error: null });
-    });
-
-    socket.on('disconnect', (reason) => {
-      set({
-        isConnected: false,
-        error: `Disconnected: ${reason}`,
-        roomId: null,
-        members: [],
-      });
-    });
-
-    socket.on('party_created', ({ roomId }) => {
-      const currentUser = get().user;
-      set({
-        roomId,
-        members: currentUser ? [currentUser] : [],
-      });
-    });
-
-    socket.on('new_user_joined', ({ userInfo }) => {
-      set((state) => ({
-        members: [...state.members, userInfo],
-      }));
-    });
-
-    socket.on('user_left', (payload) => {
-      if (payload && payload.userInfo) {
-        
-        set((state) => ({
-          members: state.members.filter(
-            (m) => m.id != payload.userInfo.id,
-          ),
-        }));
-      } else {
-        console.warn(
-          "Received 'user_left' event with no payload. Member list may be inaccurate.",
-        );
-      }
-    });
-
-    socket.on('party_joined', (payload) => {
-      set({
-        members: payload?.members
-      })
-    })
-
-    socket.connect();
-    set({ socket });
-  },
-
-  disconnect: () => {
-    const socket = get().socket;
-    if (socket) {
-      socket.disconnect();
-    }
-    set({
+export const usePartyStore = create(
+  persist<PartyStore>(
+    (set, get) => ({
       socket: null,
       isConnected: false,
+      user: null,
       roomId: null,
+      videoId: null,
       members: [],
-    });
-  },
+      error: null,
+      setUser: (user) => {
+        set({ user });
+      },
 
-  createParty: () => {
-    const { socket, user } = get();
-    if (socket && user) {
-      socket.emit('create_party', user);
-    } else {
-      set({ error: 'Cannot create party. Not connected or no user info.' });
-    }
-  },
+      initializeSocket: () => {
+        if (get().socket) {
+          return;
+        }
 
-  joinParty: (roomId) => {
-    return new Promise<void>((resolve, reject) => {
-    const { socket, user } = get();
-    console.log(user);
-    if (socket && user) {
-      socket.emit('join_party', { ...user, roomId });
-      set({
-        roomId,
-        members: [user], 
-      });
-      resolve();
-    } else {
-      const errorMsg = 'Cannot join party. Not connected or no user info.';
-      set({ error: errorMsg });
-      reject(new Error(errorMsg));
-    }
-    })
-  },
+        const user = get().user;
+        if (!user) {
+          set({ error: 'User info must be set before connecting.' });
+          return;
+        }
 
-  leaveParty: () => {
-    const { socket } = get();
-    if (socket) {
-      set({ roomId: null, members: [] });
-      socket.emit('leave_party');
-    }
-  },
-}));
+        const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+          SOCKET_URL,
+          {
+            autoConnect: false,
+          },
+        );
+
+        socket.on('connect', () => {
+          set({ isConnected: true, error: null });
+        });
+
+        socket.on('disconnect', (reason) => {
+          set({
+            isConnected: false,
+            error: `Disconnected: ${reason}`,
+            roomId: null,
+            members: [],
+          });
+        });
+
+        socket.on('party_created', ({ roomId }) => {
+          const currentUser = get().user;
+          set({
+            roomId,
+            members: currentUser ? [currentUser] : [],
+          });
+        });
+
+        socket.on('new_user_joined', ({ userInfo }) => {
+          set((state) => ({
+            members: [...state.members, userInfo],
+          }));
+        });
+
+        socket.on('user_left', (payload) => {
+          if (payload && payload.userInfo) {
+            set((state) => ({
+              members: state.members.filter(
+                (m) => m.id != payload.userInfo.id,
+              ),
+            }));
+          } else {
+            console.warn(
+              "Received 'user_left' event with no payload. Member list may be inaccurate.",
+            );
+          }
+        });
+
+        socket.on('party_joined', (payload) => {
+          set({
+            members: payload?.members,
+          });
+        });
+
+        socket.on('start_playback', (payload) => {
+          set({
+            videoId: payload?.videoId,
+          });
+          get().start_playback();
+          console.log("Event 'start_playback' was called");
+        });
+
+        socket.connect();
+        set({ socket });
+      },
+
+      disconnect: () => {
+        const socket = get().socket;
+        if (socket) {
+          socket.disconnect();
+        }
+        set({
+          socket: null,
+          isConnected: false,
+          roomId: null,
+          members: [],
+        });
+      },
+
+      createParty: () => {
+        const { socket, user } = get();
+        if (socket && user) {
+          socket.emit('create_party', user);
+        } else {
+          set({ error: 'Cannot create party. Not connected or no user info.' });
+        }
+      },
+
+      joinParty: (roomId) => {
+        return new Promise<void>((resolve, reject) => {
+          const { socket, user } = get();
+          console.log(user);
+          if (socket && user) {
+            socket.emit('join_party', { ...user, roomId });
+            set({
+              roomId,
+              members: [user],
+            });
+            resolve();
+          } else {
+            const errorMsg = 'Cannot join party. Not connected or no user info.';
+            set({ error: errorMsg });
+            reject(new Error(errorMsg));
+          }
+        });
+      },
+
+      leaveParty: () => {
+        const { socket } = get();
+        if (socket) {
+          set({ roomId: null, members: [] });
+          socket.emit('leave_party');
+        }
+      },
+
+      start_playback: () => {
+        const { videoId } = get();
+        console.log("The method was called");
+        if (videoId) {
+          window.location.href = `http://localhost:5173/watch/${videoId}`;
+        } else {
+          console.error("Cannot start playback: videoId is not set.");
+        }
+      },
+    }),
+    {
+      name: 'party-store',
+      partialize: (state) => ({
+        socket: null,
+        isConnected: false,
+        error: null,
+        user: state.user || null,
+        roomId: state.roomId || null,
+        videoId: state.videoId || null,
+        members: state.members || [],
+        setUser: state.setUser,
+        initializeSocket: state.initializeSocket,
+        disconnect: state.disconnect,
+        createParty: state.createParty,
+        joinParty: state.joinParty,
+        leaveParty: state.leaveParty,
+        start_playback: state.start_playback,
+      }),
+    },
+  ),
+);

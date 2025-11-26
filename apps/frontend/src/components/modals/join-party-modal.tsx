@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function JoinPartyModal() {
     const { isOpen, onClose, onOpen, type } = useModal();
@@ -17,9 +18,9 @@ export function JoinPartyModal() {
         try {
             await joinParty(partyCode);
 
-            console.log("Successfully joined party with code:", partyCode);
             onClose();
             onOpen("party", "");
+            toast.success("Jsi připojen v partě!");
 
         } catch (error) {
             console.error("Failed to join party:", error);
