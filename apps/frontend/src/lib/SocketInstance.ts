@@ -4,7 +4,7 @@ import type { ServerToClientEvents, ClientToServerEvents } from '../types/socket
 // 1. Get the server URL from environment variables
 // In your .env.local file, you should have:
 // VITE_WEBSOCKET_URL=http://localhost:80
-const URL =  'http://localhost:80/WatchParty';
+const URL =  'http://localhost:80/Party';
 
 // 2. Create and type the socket instance
 export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(URL, {
