@@ -1,62 +1,60 @@
 import { useEffect } from 'react';
 import { useSocket } from '../context/socket-context';
 import { usePartyStore } from '../stores/partyStore';
-import type { RoomUser, PlaybackState } from '../types/socket-types';
+import type { PartyUser } from '../types/socket-types';
 
-// This component renders nothing. Its only job is to sync
-// socket events to the Zustand store.
 export const SocketManager = () => {
   const socket = useSocket();
-  const { setParty, addUser, removeUser, clearParty, setPlaybackState } = usePartyStore();
-
   useEffect(() => {
-    // This handler now expects the full state from the server
-    const onInitPartyState = (state: any) => {
-      console.log('SocketManager: Received initpartystate', state);
-      setParty(state);
+    const { user, roomId, initializeSocket } = usePartyStore.getState();
+
+    if (user && roomId) {
+      initializeSocket();
+    }
+  }, []);
+  
+  useEffect(() => {
+    if (!socket) return;
+
+    const onPartyCreated = ({ roomId }: { roomId: string }) => {
+      usePartyStore.getState()._handlePartyCreated(roomId);
     };
 
-    const onUserJoined = (user: RoomUser) => {
-      console.log('SocketManager: User joined', user);
-      addUser(user);
+    const onNewUserJoined = ({ userInfo }: { userInfo: PartyUser }) => {
+      usePartyStore.getState()._handleNewUserJoined(userInfo);
     };
 
-    const onUserLeft = (socketId: string) => {
-      console.log('SocketManager: User left', socketId);
-      removeUser(socketId);
+    const onUserLeft = (payload?: { userInfo: PartyUser }) => {
+      if (payload?.userInfo) {
+        usePartyStore.getState()._handleUserLeft(payload.userInfo);
+      }
     };
 
-    const onDisconnect = () => {
-      console.log('SocketManager: Disconnected');
-      clearParty();
+    const onPartyJoined = (payload?: { members: PartyUser[] }) => {
+      if (payload?.members) {
+        usePartyStore.getState()._handlePartyJoined(payload.members);
+      }
     };
 
-    const onPlaybackStarted = (data: Partial<PlaybackState> & { timeStamp: number }) => {
-      setPlaybackState({
-        videoId: data.videoId,
-        currentTime: data.currentTime,
-        isPlaying: true,
-        lastUpdateTimestamp: data.timeStamp,
-      });
+    const onStartPlayback = (payload?: { videoId: string }) => {
+      usePartyStore.setState({ videoId: payload?.videoId });
+      usePartyStore.getState().start_playback();
     };
 
-    // Attach all listeners
-    socket.on('initpartystate', onInitPartyState);
-    socket.on('userJoined', onUserJoined);
-    socket.on('userLeft', onUserLeft);
-    socket.on('disconnect', onDisconnect);
-    socket.on('playbackStarted', onPlaybackStarted)
+    socket.on('party_created', onPartyCreated);
+    socket.on('new_user_joined', onNewUserJoined);
+    socket.on('user_left', onUserLeft);
+    socket.on('party_joined', onPartyJoined);
+    socket.on('start_playback', onStartPlayback);
 
-
-    // Cleanup
     return () => {
-      socket.off('initpartystate', onInitPartyState);
-      socket.off('userJoined', onUserJoined);
-      socket.off('userLeft', onUserLeft);
-      socket.off('disconnect', onDisconnect);
-      socket.off('playbackStarted', onPlaybackStarted)
+      socket.off('party_created', onPartyCreated);
+      socket.off('new_user_joined', onNewUserJoined);
+      socket.off('user_left', onUserLeft);
+      socket.off('party_joined', onPartyJoined);
+      socket.off('start_playback', onStartPlayback);
     };
-  }, [socket, setParty, addUser, removeUser, clearParty]);
+  }, [socket]);
 
-  return null; // Renders nothing
+  return null; 
 };

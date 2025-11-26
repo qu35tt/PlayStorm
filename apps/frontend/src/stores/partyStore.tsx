@@ -1,14 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { io, Socket } from 'socket.io-client';
 import type {
-  ClientToServerEvents,
-  ServerToClientEvents,
   PartyUser,
 } from '../types/socket-types';
+import { socket } from '../lib/SocketInstance'; // Import the singleton socket
 
-type PartyStore = {
-  socket: Socket | null;
+
+export type PartyStore = {
   isConnected: boolean;
   user: PartyUser | null;
   roomId: string | null;
@@ -21,15 +19,24 @@ type PartyStore = {
   createParty: () => void;
   joinParty: (roomId: string) => Promise<void>;
   leaveParty: () => void;
+  // Actions to be called by SocketManager
+  _handlePartyCreated: (roomId: string) => void;
+  _handleNewUserJoined: (userInfo: PartyUser) => void;
+  _handleUserLeft: (userInfo: PartyUser) => void;
+  _handlePartyJoined: (members: PartyUser[]) => void;
   start_playback: () => void;
 };
 
-const SOCKET_URL = 'http://localhost:80/Party';
+type PersistedData = {
+  user: PartyUser | null;
+  roomId: string | null;
+  videoId: string | null;
+}
 
-export const usePartyStore = create(
-  persist<PartyStore>(
+export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedData]]>(
+
+  persist(
     (set, get) => ({
-      socket: null,
       isConnected: false,
       user: null,
       roomId: null,
@@ -41,89 +48,26 @@ export const usePartyStore = create(
       },
 
       initializeSocket: () => {
-        if (get().socket) {
+        if (socket.connected) {
           return;
         }
-
-        const user = get().user;
-        if (!user) {
-          set({ error: 'User info must be set before connecting.' });
-          return;
-        }
-
-        const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-          SOCKET_URL,
-          {
-            autoConnect: false,
-          },
-        );
 
         socket.on('connect', () => {
           set({ isConnected: true, error: null });
         });
 
         socket.on('disconnect', (reason) => {
-          set({
-            isConnected: false,
-            error: `Disconnected: ${reason}`,
-            roomId: null,
-            members: [],
-          });
-        });
-
-        socket.on('party_created', ({ roomId }) => {
-          const currentUser = get().user;
-          set({
-            roomId,
-            members: currentUser ? [currentUser] : [],
-          });
-        });
-
-        socket.on('new_user_joined', ({ userInfo }) => {
-          set((state) => ({
-            members: [...state.members, userInfo],
-          }));
-        });
-
-        socket.on('user_left', (payload) => {
-          if (payload && payload.userInfo) {
-            set((state) => ({
-              members: state.members.filter(
-                (m) => m.id != payload.userInfo.id,
-              ),
-            }));
-          } else {
-            console.warn(
-              "Received 'user_left' event with no payload. Member list may be inaccurate.",
-            );
-          }
-        });
-
-        socket.on('party_joined', (payload) => {
-          set({
-            members: payload?.members,
-          });
-        });
-
-        socket.on('start_playback', (payload) => {
-          set({
-            videoId: payload?.videoId,
-          });
-          get().start_playback();
-          console.log("Event 'start_playback' was called");
+          set({ isConnected: false, error: `Disconnected: ${reason}` });
         });
 
         socket.connect();
-        set({ socket });
       },
 
       disconnect: () => {
-        const socket = get().socket;
         if (socket) {
           socket.disconnect();
         }
         set({
-          socket: null,
           isConnected: false,
           roomId: null,
           members: [],
@@ -131,8 +75,8 @@ export const usePartyStore = create(
       },
 
       createParty: () => {
-        const { socket, user } = get();
-        if (socket && user) {
+        const { user } = get();
+        if (socket.connected && user) {
           socket.emit('create_party', user);
         } else {
           set({ error: 'Cannot create party. Not connected or no user info.' });
@@ -141,14 +85,10 @@ export const usePartyStore = create(
 
       joinParty: (roomId) => {
         return new Promise<void>((resolve, reject) => {
-          const { socket, user } = get();
-          console.log(user);
-          if (socket && user) {
+          const { user } = get();
+          if (socket.connected && user) {
             socket.emit('join_party', { ...user, roomId });
-            set({
-              roomId,
-              members: [user],
-            });
+            set({ roomId }); // Set only the roomId, let the server be the source of truth for members
             resolve();
           } else {
             const errorMsg = 'Cannot join party. Not connected or no user info.';
@@ -159,11 +99,36 @@ export const usePartyStore = create(
       },
 
       leaveParty: () => {
-        const { socket } = get();
-        if (socket) {
+        const { roomId } = get();
+        if (socket && roomId) {
           set({ roomId: null, members: [] });
-          socket.emit('leave_party');
+          socket.emit('leave_party', roomId); // Pass the roomId to the server
         }
+      },
+
+      // These actions will be called from SocketManager
+      _handlePartyCreated: (roomId) => {
+        const currentUser = get().user;
+        set({
+          roomId,
+          members: currentUser ? [currentUser] : [],
+        });
+      },
+
+      _handleNewUserJoined: (userInfo) => {
+        set((state) => ({
+          members: [...state.members, userInfo],
+        }));
+      },
+
+      _handleUserLeft: (userInfo) => {
+        set((state) => ({
+          members: state.members.filter((m) => m.id !== userInfo.id),
+        }));
+      },
+
+      _handlePartyJoined: (members) => {
+        set({ members });
       },
 
       start_playback: () => {
@@ -179,20 +144,10 @@ export const usePartyStore = create(
     {
       name: 'party-store',
       partialize: (state) => ({
-        socket: null,
-        isConnected: false,
-        error: null,
         user: state.user || null,
         roomId: state.roomId || null,
         videoId: state.videoId || null,
         members: state.members || [],
-        setUser: state.setUser,
-        initializeSocket: state.initializeSocket,
-        disconnect: state.disconnect,
-        createParty: state.createParty,
-        joinParty: state.joinParty,
-        leaveParty: state.leaveParty,
-        start_playback: state.start_playback,
       }),
     },
   ),

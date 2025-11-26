@@ -20,5 +20,5 @@ export interface ServerToClientEvents {
   new_user_joined: (payload: { userInfo: PartyUser }) => void;
   user_left: (payload?: { userInfo: PartyUser }) => void;
   party_joined: (payload?: {members: PartyUser[]}) => void;
-  start_playback: (payload?: { videoId: string, current_time: string }) => void;
+  start_playback: (payload?: { videoId: string }) => void;
 }
