@@ -58,6 +58,8 @@ type VideoData = {
 export function VideoModal(){
   const nav = useNavigate();
   const user = useUserStore();
+
+  const { start_playback } = usePartyStore();
   
   const { isOpen, onClose, type, videoId } = useModal();
 
@@ -73,14 +75,10 @@ export function VideoModal(){
     setData(null);
     setSelectedSeasonIndex(0);
     async function getData(){
-      // const response = await axios.get(`${import.meta.env.VITE_API_URL}video/data/${videoId}`, { headers: { Authorization: `Bearer ${user.token}` } })
-      // setData(response.data);
-
       if(!videoId) return;
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}video/data/${videoId}`, { headers: { Authorization: `Bearer ${user.token}` } });
         setData(response.data);
-        console.log(response.data)
       }
       catch(err) {
         console.log(err);
@@ -100,8 +98,11 @@ export function VideoModal(){
     else {
       nav(`/watch/${videoId}`);
     }
+
     if(party.roomId){
-      // socket.emit("start_playback", { roomId: party.roomId, videoId: videoId });
+      if (videoId) {
+        start_playback(videoId);
+      }
     }
 
     onClose();

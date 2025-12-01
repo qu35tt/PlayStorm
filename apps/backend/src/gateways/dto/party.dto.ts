@@ -42,9 +42,6 @@ export class PlaybackData {
     @IsNumber()
     @IsNotEmpty()
     current_time: number
-
-    @IsNotEmpty()
-    last_update: Date
 }
 
 export enum PlayerAction {

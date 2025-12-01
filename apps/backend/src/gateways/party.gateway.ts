@@ -86,7 +86,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('start_playback')
   async handleStartPlayback(@ConnectedSocket() client: Socket, @MessageBody() data: PlaybackData) {
     let roomId = client.data.roomId;
-    
+    console.log(data.videoId)
     client.to(roomId).emit('start_playback', {videoId: data.videoId, current_time: data.current_time})
   }
 

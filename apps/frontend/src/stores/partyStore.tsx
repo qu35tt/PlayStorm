@@ -2,12 +2,9 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type {
   PartyUser,
+  PlaybackData,
 } from '../types/socket-types';
 import { socket } from '../lib/SocketInstance'; // Import the singleton socket
-
-
-
-
 
 export type PartyStore = {
   isConnected: boolean;
@@ -22,12 +19,13 @@ export type PartyStore = {
   createParty: () => Promise<void>;
   joinParty: (roomId: string) => Promise<void>;
   leaveParty: () => void;
+  start_playback: (videoId: string) => void;
   // Actions to be called by SocketManager
   _handlePartyCreated: (roomId: string) => void;
   _handleNewUserJoined: (userInfo: PartyUser) => void;
   _handleUserLeft: (userInfo: PartyUser) => void;
   _handlePartyJoined: (members: PartyUser[]) => void;
-  start_playback: (navigate: any) => void;
+  _handleStart_playback: (navigate: any, data: PlaybackData) => void;
 };
 
 type PersistedData = {
@@ -105,16 +103,21 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
 
       leaveParty: () => {
         const { roomId } = get();
-        console.log("roomId: " + roomId)
-        console.log("socket: " + socket)
-        
         if (socket && roomId) {
           set({ roomId: null, members: [], videoId: null });
-          socket.emit('leave_party', roomId); // Pass the roomId to the server
-          console.log("Leaving party")
+          socket.emit('leave_party', roomId);
         }
       },
 
+      start_playback: (videoId: string) => {
+        set({
+          videoId
+        });
+
+        if(socket && videoId){
+          socket.emit('start_playback', { videoId, current_time: 0 });
+        }
+      },
       // These actions will be called from SocketManager
       _handlePartyCreated: (roomId) => {
         const currentUser = get().user;
@@ -148,10 +151,11 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
         set({ members });
       },
 
-      start_playback: (navigate: any) => {
-        const { videoId } = get();
-        if (videoId) {
-           navigate(`/watch/${videoId}`)
+      _handleStart_playback: (navigate: any, data: PlaybackData) => {
+        console.log("start_playback")
+        console.log("video ID:", data.videoId)
+        if (data.videoId) {
+           navigate(`/watch/${data.videoId}`)
         } else {
           console.error("Cannot start playback: videoId is not set.");
         }

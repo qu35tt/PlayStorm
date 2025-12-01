@@ -41,8 +41,12 @@ export const SocketManager = () => {
     };
 
     const onStartPlayback = (payload?: { videoId: string }) => {
-      usePartyStore.setState({ videoId: payload?.videoId });
-      usePartyStore.getState().start_playback(nav);
+      if (!payload) {
+        console.error("Payload is undefined for start_playback event.");
+        return;
+      }
+      usePartyStore.setState({ videoId: payload.videoId });
+      usePartyStore.getState()._handleStart_playback(nav, payload.videoId);
     };
 
     socket.on('party_created', onPartyCreated);
