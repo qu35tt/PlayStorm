@@ -9,10 +9,16 @@ export type JoinParty = PartyUser & {
   roomId: string;
 };
 
+export type PlaybackData = {
+    videoId: string
+    current_time: number
+}
+
 export interface ClientToServerEvents {
   create_party: (user: PartyUser) => void;
   join_party: (data: JoinParty) => void;
   leave_party: (roomId: string) => void;
+  start_playback: (data: PlaybackData) => void;
 }
 
 export interface ServerToClientEvents {
