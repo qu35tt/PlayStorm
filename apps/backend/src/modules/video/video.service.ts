@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { ANIME } from "@consumet/extensions"
@@ -29,19 +29,59 @@ export class VideoService {
 
     async getVideo(id: string) {
         try{
-            const video = await this.prisma.video.findUnique({
+            const episode = await this.prisma.episode.findUnique({
                 where: {
                     id
                 },
                 select: {
+                    id: true,
+                    title: true,
+                    length: true,
                     URL: true,
-                    name: true
+                    season: {
+                        select: {
+                            name: true,
+                            video: {
+                                select: {
+                                    name: true,
+                            }
+                        }
+                    }
                 }
-            })
+            }
+        })
+        
+        if(episode) {
+            return {
+                type: 'EPISODE',
+                URL: episode.URL,
+                name: `${episode.season.video.name} - ${episode.title}`,
+            }
+        }
 
-            if (!video) throw new NotFoundException('Video not found');
+        const video = await this.prisma.video.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                name: true,
+                URL: true,
+                videotype: true,
+                banner: true
+            }
+        });
 
-            return video;
+        if(!video) throw new NotFoundException("Video does not exist")
+
+        if (video.videotype === 'SERIES') {
+            throw new BadRequestException('This is a Series container. Please provide a specific Episode ID.');
+        }
+
+        return {
+            type: 'MOVIE',
+            URL: video.URL,
+            name: video.name,
+        };
+
         }
         catch(err) {
             throw new InternalServerErrorException(err)
@@ -80,6 +120,7 @@ export class VideoService {
                     genre: true,
                     videotype: true,
                     description: true,
+                    length: true,
                     seasons: {
                         orderBy: { number: 'asc' },
                         include: { 
@@ -88,7 +129,7 @@ export class VideoService {
                                 select: {
                                     id: true,
                                     title: true,
-                                    number: true,
+                                    length: true,
                                     thumbnail: true,
                                     description: true,
                                 }
