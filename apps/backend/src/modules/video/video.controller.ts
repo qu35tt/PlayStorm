@@ -30,8 +30,9 @@ export class VideoController {
     return this.videoService.getVideoData(id);
   }
 
-  @Get('test/consumet')
-  consumetTest() {
-    return this.videoService.consumetTest();
+  @UseGuards(AuthGuard)
+  @Get('episode/:id')
+  getEpisodeUrl(@Param('id') id: string) {
+    return this.videoService.getEpisodeUrl(id);
   }
 }

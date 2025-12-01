@@ -42,7 +42,7 @@ export function VideoPlayer() {
         return <h1>Loading ...</h1>
     
     return(
-        <MediaPlayer title="Sprite Fight" streamType="on-demand" load="visible"  src={current.URL} crossOrigin="anonymous" autoPlay className='realtive w-screen h-screen'>
+        <MediaPlayer title={current.name} load="visible" src={current.URL} className='realtive w-screen h-screen'>
             <MediaProvider />
             <VideoControls name={current!.name} />
         </MediaPlayer>
