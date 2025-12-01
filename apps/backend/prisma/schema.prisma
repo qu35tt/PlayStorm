@@ -8,7 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
+model User {W
   id           String         @id @default(uuid())
   username     String
   password     String
@@ -21,14 +21,46 @@ model User {
 model Video {
   id        String      @id @default(uuid())
   name      String
-  length    Int
-  URL       String
+  description String?
+  length    Int?
+  URL       String?
   thumbnail String
   banner    String
   genre_id  String
   videotype VideoType
   favorites Favorites[]
   genre     Genre       @relation(fields: [genre_id], references: [id])
+  seasons   Season[]    @relation("VideoToSeason")
+}
+
+model Season { 
+  id String @id @default(uuid())
+  name String
+  number Int
+
+  videoId String
+  video Video @relation(fields: [videoId], references: [id], name: "VideoToSeason")
+
+  episodes Episode[]
+
+  createdAt DateTime @default(now())
+  lastUpdate DateTime @updatedAt @default(now())
+}
+
+model Episode {
+id            String   @id @default(uuid())
+  title         String
+  description   String?
+  number        Int
+  
+  length        Int      
+  URL           String   
+  thumbnail     String?
+  
+  season_id     String
+  season        Season   @relation(fields: [season_id], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
 }
 
 model Genre {

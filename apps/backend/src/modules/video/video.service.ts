@@ -48,6 +48,26 @@ export class VideoService {
         }
     }
 
+    async getEpisodeUrl(episodeId: string) {
+        try {
+            const episode = await this.prisma.episode.findUnique({
+                where: { id: episodeId },
+                select: {
+                    id: true,
+                    title: true,
+                    URL: true,
+                    length: true
+                }
+            });
+
+            if (!episode) throw new NotFoundException('Episode not found');
+            
+            return episode;
+        } catch (err) {
+            throw new InternalServerErrorException(err);
+        }
+    }
+
     getVideoData(id: string) {
         try{
             const video = this.prisma.video.findFirst({
@@ -57,7 +77,24 @@ export class VideoService {
                 select: {
                     name: true,
                     banner: true,
-                    genre: true
+                    genre: true,
+                    videotype: true,
+                    description: true,
+                    seasons: {
+                        orderBy: { number: 'asc' },
+                        include: { 
+                            episodes: {
+                                orderBy: { number: 'asc' },
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    number: true,
+                                    thumbnail: true,
+                                    description: true,
+                                }
+                            }
+                        }
+                    }
                 }
             })
 
