@@ -27,8 +27,9 @@ export function VideoPlayer() {
         async function getVideo()
         {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}video/${id.id}`,  { headers: { Authorization: `Bearer ${user.token}` } })
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}video/stream/${id.id}`,  { headers: { Authorization: `Bearer ${user.token}` } })
                 setCurrent(response.data);
+                console.log(response.data)
             }
             catch(err){
                 console.error(err);

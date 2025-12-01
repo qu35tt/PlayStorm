@@ -45,6 +45,7 @@ type VideoData = {
   id: string;
   name: string;
   description?: string;
+  length: number;
   banner: string;
   videotype: "MOVIE" | "SERIES";
   genre: {
@@ -131,6 +132,9 @@ export function VideoModal(){
                 <span className="text-green-500 font-bold">98% Match</span>
                 <span>2024</span>
                 <span className="border border-gray-500 px-1 text-xs">HD</span>
+                {data?.videotype === "MOVIE" && (
+                  <span className="flex flex-row gap-2 items-center"><Clock className="w-3 h-3"/> {formatTime(data.length)}</span>
+                )}
               </div>
               <p className="text-gray-300 leading-relaxed text-sm md:text-base">
                   {data?.description || "No description available."}
