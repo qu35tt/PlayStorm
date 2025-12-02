@@ -14,8 +14,6 @@ export class RoomManagmentService {
 
         this.socketToRoom.set(socketId, { roomId, user })
 
-        console.log("connected users: ", this.socketToRoom.size)
-
         return Array.from(userSet);
     }
 

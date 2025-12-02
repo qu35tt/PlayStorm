@@ -1,12 +1,12 @@
-import { usePartyStore } from '../../stores/partyStore';
-import { useModal } from "../../hooks/use-modal-store";
+import { usePartyStore } from '@/stores/partyStore';
+import { useModal } from "@/hooks/use-modal-store";
 import { MemberCard } from "../MemberCard";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "../ui/dialog";
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-  import { useUser } from "../../context/user-context";
-  import { useUserStore } from "../../stores/userStore";
+import { useUser } from "@/context/user-context";
+import { useUserStore } from "@/stores/userStore";
 import { useEffect } from 'react';
 
 export function PartyModal() {
@@ -122,7 +122,7 @@ export function PartyModal() {
     <Dialog open={isModalOpen} onOpenChange={onClose}>
       <DialogContent
         forceMount
-        className="w-3/4 h-3/4 p-4"
+        className="w-1/4 h-1/4 p-"
       >
         <DialogHeader>
           <h2
@@ -133,8 +133,8 @@ export function PartyModal() {
           <div
             className="h-full w-full flex flex-col justify-center items-center space-y-4 scale-135"
           >
-            <Button className='w-1/4' onClick={handleCreateParty}> Create Party! </Button>
-            <Button className='w-1/4' onClick={handleJoinParty}> Join Party!</Button>
+            <Button className='w-2/4' onClick={handleCreateParty}> Create Party! </Button>
+            <Button className='w-2/4' onClick={handleJoinParty}> Join Party!</Button>
           </div>
         </DialogHeader>
       </DialogContent>

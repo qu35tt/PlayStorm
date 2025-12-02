@@ -1,10 +1,8 @@
 import { Controls, PlayButton, TimeSlider, useMediaState, FullscreenButton, SeekButton, MuteButton, Time, VolumeSlider } from '@vidstack/react';
 import { Play, Pause, Minimize, Maximize, ArrowRight, ArrowLeft, VolumeX, Volume1, Volume2 } from "lucide-react";
 import { useState, useRef, useEffect } from 'react';
-
-type VideoControlsProps = {
-  name: string;
-};
+import { usePartyStore } from '@/stores/partyStore';
+import type { VideoControlsProps } from '@/types/video.types'
 
 export function VideoControls({ name }: VideoControlsProps) {  
     const isPaused = useMediaState('paused');
@@ -12,6 +10,7 @@ export function VideoControls({ name }: VideoControlsProps) {
     isMuted = useMediaState('muted');
     const [showVolume, setShowVolume] = useState(false);
     const hideTimerRef = useRef<number | null>(null);
+    const playback_action = usePartyStore((state) => state.playback_action);
 
     function showVolumePop(){
         if(hideTimerRef.current){
@@ -29,6 +28,14 @@ export function VideoControls({ name }: VideoControlsProps) {
         }, delay);
     }
 
+    const handlePlay = () => {
+        playback_action({action: 'PLAY'});
+    };
+
+    const handlePause = () => {
+        playback_action({action: 'PAUSE'});
+    };
+
     useEffect(() => {
         return () => {
             if(hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
@@ -40,7 +47,7 @@ export function VideoControls({ name }: VideoControlsProps) {
             <Controls.Root className="data-[visible]:opacity-100 absolute bottom-0 left-0 z-10 w-full h-[5rem] flex flex-col bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity pointer-events-none text-white">
                 <Controls.Group className="pointer-events-auto w-full flex items-center px-4 py-2 gap-4">
                     <PlayButton className="group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4">
-                        {isPaused ? <Play className='w-8 h-8'/> : <Pause className='w-8 h-8'/>}
+                        {isPaused ? <Play className='w-8 h-8' onClick={handlePlay}/> : <Pause className='w-8 h-8' onClick={handlePause}/>}
                     </PlayButton>
                     <SeekButton seconds={-10} className='group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4 aria-hidden:hidden'>
                         <ArrowLeft className='w-8 h-8'/>

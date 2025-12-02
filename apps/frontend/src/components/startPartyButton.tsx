@@ -1,7 +1,6 @@
 import { useModal } from "../hooks/use-modal-store";
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
-import { toast } from "sonner";
 
 export function StartPartyButton() {
   const { onOpen } = useModal();

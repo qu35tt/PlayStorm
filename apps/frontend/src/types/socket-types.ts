@@ -14,11 +14,16 @@ export type PlaybackData = {
     current_time: number
 }
 
+export type PlayerAction = {
+ action: | 'PLAY' | 'PAUSE';
+}
+
 export interface ClientToServerEvents {
   create_party: (user: PartyUser) => void;
   join_party: (data: JoinParty) => void;
   leave_party: (roomId: string) => void;
   start_playback: (data: PlaybackData) => void;
+  playback_action: (action: PlayerAction) => void;
 }
 
 export interface ServerToClientEvents {
@@ -27,4 +32,5 @@ export interface ServerToClientEvents {
   user_left: (payload?: { userInfo: PartyUser }) => void;
   party_joined: (payload?: {members: PartyUser[]}) => void;
   start_playback: (payload?: { videoId: string }) => void;
+  sync_playback: (payload?: { action: PlayerAction }) => void;
 }

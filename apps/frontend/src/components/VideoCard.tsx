@@ -1,15 +1,7 @@
 import { useModal } from "@/hooks/use-modal-store"
+import type { CardProps } from '@/types/video.types'
 
-type VideoData = {
-    id: string
-    name: string
-    length: number
-    thumbnail: string
-}
 
-interface CardProps {
-    videoData: VideoData
-}
 
 export function VideoCard({ videoData }: CardProps){
 
