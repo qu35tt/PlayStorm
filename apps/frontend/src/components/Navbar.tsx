@@ -16,14 +16,8 @@ import { useEffect, useState } from "react";
 import { useUser } from "@/context/user-context";
 import { useModal } from "@/hooks/use-modal-store";
 import { Separator } from "@/components/ui/separator";
+import type { VideoType, NavbarProps } from '@/types/video.types'
 
-type VideoType = "ALL" | "MOVIE" | "SERIES"
-
-interface NavbarProps {
-    setSearchQuery: (query: string) => void;
-    setType: (query: VideoType) => void;
-    selectedType: VideoType;
-}
 
 export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -114,7 +108,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
     }
 
     return (
-        <div className="w-full bg-[#0E111A] text-4xl px-4">
+        <div className="w-full bg-[#0E111A] text-2xl lg:text-4xl px-4">
             <div className="h-[10rem] flex items-center w-full max-w-screen mx-auto">
                 <img
                     src="/logo.svg"
@@ -131,7 +125,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
 
                 {/* Search - hidden on small screens */}
                 <div className="hidden md:flex items-center justify-center">
-                    <input type="search" className="realtive w-40 md:w-64 lg:w-96 block rounded-2xl onfocus:border-1 border-neutral-200 bg-transparent p-4 text-base" placeholder="Search" aria-label="Search" onChange={(e) => setSearchQuery(e.target.value)} />
+                    <input type="search" className="w-[5rem] md:w-[10rem] lg:w-[15rem] rounded-2xl onfocus:border-1 border-neutral-200 bg-transparent p-4 text-base" placeholder="Search" aria-label="Search" onChange={(e) => setSearchQuery(e.target.value)} />
                     <Search className="w-6 h-6 mx-4"/>
                 </div>
 

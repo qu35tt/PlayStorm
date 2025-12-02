@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSocket } from '../context/socket-context';
 import { usePartyStore } from '../stores/partyStore';
-import type { PartyUser } from '../types/socket-types';
+import type { PartyUser, PlayerAction } from '../types/socket-types';
 import { useNavigate } from 'react-router';
 
 export const SocketManager = () => {
@@ -46,14 +46,21 @@ export const SocketManager = () => {
         return;
       }
       usePartyStore.setState({ videoId: payload.videoId });
-      usePartyStore.getState()._handleStart_playback(nav, payload.videoId);
+      usePartyStore.getState()._handleStart_playback(nav, { videoId: payload.videoId, current_time: 0 });
     };
+
+    const onPlaybackAction = (payload?: { action: PlayerAction }) => {
+      if(payload?.action) {
+        usePartyStore.getState()._handlePlayback_action(payload.action);
+      }
+    }
 
     socket.on('party_created', onPartyCreated);
     socket.on('new_user_joined', onNewUserJoined);
     socket.on('user_left', onUserLeft);
     socket.on('party_joined', onPartyJoined);
     socket.on('start_playback', onStartPlayback);
+    socket.on('sync_playback', onPlaybackAction);
 
     return () => {
       socket.off('party_created', onPartyCreated);
@@ -61,6 +68,7 @@ export const SocketManager = () => {
       socket.off('user_left', onUserLeft);
       socket.off('party_joined', onPartyJoined);
       socket.off('start_playback', onStartPlayback);
+      socket.off('sync_playback', onPlaybackAction);
     };
   }, [socket]);
 

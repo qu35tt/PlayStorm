@@ -4,12 +4,7 @@ import { Play } from "lucide-react";
 import axios from "axios"
 import { useUserStore } from "@/stores/userStore";
 import { useModal } from "@/hooks/use-modal-store";
-
-type VideoData = {
-    id: string
-    name: string
-    banner: string
-}
+import type { VideoData } from "@/types/video.types";
 
 export function Banner() {
     const [bannerVideo, setBannerVideo] = useState<VideoData>()
@@ -39,11 +34,11 @@ export function Banner() {
         getBannerVideo();
     }, []);
 
-    const bgUrl = bannerVideo?.banner ?? "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwallpapercave.com%2Fwp%2Fwp5522079.jpg&f=1&nofb=1";
+    const bgUrl = bannerVideo?.thumbnail ?? "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwallpapercave.com%2Fwp%2Fwp5522079.jpg&f=1&nofb=1";
 
     return(
         <div
-            className="relative z-10 w-full bg-cover bg-bottom overflow-hidden"
+            className="relative z-10 w-full bg-cover bg-bottom"
             style={{ backgroundImage: `url(${bgUrl})` }}
         >
             <div className="min-h-[6rem] md:min-h-[2rem] lg:min-h-[4rem] xl:min-h-[6rem] w-full">

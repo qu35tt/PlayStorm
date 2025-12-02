@@ -3,8 +3,10 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import type {
   PartyUser,
   PlaybackData,
+  PlayerAction,
 } from '../types/socket-types';
 import { socket } from '../lib/SocketInstance'; // Import the singleton socket
+import { MediaRemoteControl } from '@vidstack/react';
 
 export type PartyStore = {
   isConnected: boolean;
@@ -13,6 +15,8 @@ export type PartyStore = {
   videoId: string | null;
   members: PartyUser[];
   error: string | null;
+  remote: MediaRemoteControl | null;
+  setRemote: (remote: MediaRemoteControl) => void;
   setUser: (user: PartyUser) => void;
   initializeSocket: () => void;
   disconnect: () => void;
@@ -20,12 +24,14 @@ export type PartyStore = {
   joinParty: (roomId: string) => Promise<void>;
   leaveParty: () => void;
   start_playback: (videoId: string) => void;
+  playback_action: (action: PlayerAction) => void;
   // Actions to be called by SocketManager
   _handlePartyCreated: (roomId: string) => void;
   _handleNewUserJoined: (userInfo: PartyUser) => void;
   _handleUserLeft: (userInfo: PartyUser) => void;
   _handlePartyJoined: (members: PartyUser[]) => void;
   _handleStart_playback: (navigate: any, data: PlaybackData) => void;
+  _handlePlayback_action: (action: PlayerAction) => void;
 };
 
 type PersistedData = {
@@ -43,8 +49,14 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       videoId: null,
       members: [],
       error: null,
+      remote: null,
       setUser: (user) => {
         set({ user });
+      },
+
+      setRemote: (remote) => {
+        set({remote});
+        remote.setTarget(remote.getPlayer());
       },
 
       initializeSocket: () => {
@@ -118,6 +130,10 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
           socket.emit('start_playback', { videoId, current_time: 0 });
         }
       },
+
+      playback_action: (action: PlayerAction) => {
+        socket.emit('playback_action', action)
+      },
       // These actions will be called from SocketManager
       _handlePartyCreated: (roomId) => {
         const currentUser = get().user;
@@ -152,14 +168,43 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       },
 
       _handleStart_playback: (navigate: any, data: PlaybackData) => {
-        console.log("start_playback")
-        console.log("video ID:", data.videoId)
         if (data.videoId) {
            navigate(`/watch/${data.videoId}`)
         } else {
           console.error("Cannot start playback: videoId is not set.");
         }
       },
+
+      _handlePlayback_action: (data: PlayerAction) => {
+        const remote = get().remote;
+        const { action } = data;
+
+        console.log("Event emmited")
+        if(!remote) {
+          console.error('Video element not found.');
+          return;
+        }
+
+        console.log("Remote: ", remote);
+        console.log("Action: ",action)
+
+        const player = remote.getPlayer();
+        console.log(player);
+
+        if(!player){
+          return
+        }
+
+        switch(action){
+          case 'PLAY':
+            player.remoteControl.play()
+            console.log("PLAY EVENT");
+            break;
+          case 'PAUSE':
+            player.remoteControl.pause();
+            break;
+        }
+      }
     }),
     {
       name: 'party-store',

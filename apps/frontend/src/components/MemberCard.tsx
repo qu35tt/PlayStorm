@@ -1,12 +1,7 @@
 import { DoorOpen, User } from "lucide-react";
-import type { PartyUser } from "@/types/socket-types";
 import { Ellipsis } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
-
-type MemberCardProps = {
-  user: PartyUser;
-  isSelf?: boolean;
-};
+import type { MemberCardProps } from '@/types/video.types';
 
 export function MemberCard({ user }: MemberCardProps) {
   const { username, avatarUrl } = user;

@@ -31,7 +31,7 @@ export function JoinPartyModal() {
         <Dialog open={isModalOpen} onOpenChange={onClose}>
             <DialogContent
                 forceMount
-                className="w-2/4 h-1/4 p-4"
+                className="w-1/4 h-1/4"
             >
                 <DialogHeader>
                     <h2
@@ -44,7 +44,7 @@ export function JoinPartyModal() {
                             <Label className="text-left">Party Code:</Label>
                             <Input className="w-full" value={partyCode} onChange={(e) => setPartyCode(e.target.value)} placeholder="Enter party code"/>
                         </div>
-                        <Button className="w-18 h-12" onClick={handleJoin}>Join!</Button>
+                        <Button className="w-1/4 h-12" onClick={handleJoin}>Join!</Button>
                     </div>
                 </DialogHeader>
             </DialogContent>

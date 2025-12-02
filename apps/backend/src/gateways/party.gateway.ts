@@ -86,12 +86,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('start_playback')
   async handleStartPlayback(@ConnectedSocket() client: Socket, @MessageBody() data: PlaybackData) {
     let roomId = client.data.roomId;
-    console.log(data.videoId)
     client.to(roomId).emit('start_playback', {videoId: data.videoId, current_time: data.current_time})
   }
 
   @SubscribeMessage('playback_action')
-  async handlePlaybackAction(@ConnectedSocket() client: Socket, @MessageBody() data: PlaybackData, @MessageBody() action: PlayerAction) {
+  async handlePlaybackAction(@ConnectedSocket() client: Socket, @MessageBody() action: PlayerAction) {
     let roomId = client.data.roomId;
 
     client.to(roomId).emit('sync_playback', { action: action })
