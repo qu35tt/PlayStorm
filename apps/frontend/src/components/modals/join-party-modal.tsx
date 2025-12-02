@@ -31,7 +31,7 @@ export function JoinPartyModal() {
         <Dialog open={isModalOpen} onOpenChange={onClose}>
             <DialogContent
                 forceMount
-                className="w-1/4 h-1/4"
+                className="w-1/4 h-1/4 bg-[#0E111A] border-0 text-white"
             >
                 <DialogHeader>
                     <h2

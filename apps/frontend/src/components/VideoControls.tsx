@@ -2,7 +2,7 @@ import { Controls, PlayButton, TimeSlider, useMediaState, FullscreenButton, Seek
 import { Play, Pause, Minimize, Maximize, ArrowRight, ArrowLeft, VolumeX, Volume1, Volume2 } from "lucide-react";
 import { useState, useRef, useEffect } from 'react';
 import { usePartyStore } from '@/stores/partyStore';
-import type { VideoControlsProps } from '@/types/video.types'
+import type { VideoControlsProps } from '@/types/video-data-types'
 
 export function VideoControls({ name }: VideoControlsProps) {  
     const isPaused = useMediaState('paused');
@@ -36,6 +36,14 @@ export function VideoControls({ name }: VideoControlsProps) {
         playback_action({action: 'PAUSE'});
     };
 
+    const handleSeekFrw = () => {
+        playback_action({action: 'SEEK_FRW'})
+    };
+
+    const handleSeekBck = () => {
+        playback_action({action: 'SEEK_BCK'})
+    }
+
     useEffect(() => {
         return () => {
             if(hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
@@ -44,15 +52,15 @@ export function VideoControls({ name }: VideoControlsProps) {
 
     return (
         <>
-            <Controls.Root className="data-[visible]:opacity-100 absolute bottom-0 left-0 z-10 w-full h-[5rem] flex flex-col bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity pointer-events-none text-white">
+            <Controls.Root className="data-[visible]:opacity-100 absolute bottom-0 left-0 z-10 w-full h-[5rem] flex flex-col from-black/60 to-transparent opacity-0 transition-opacity pointer-events-none text-white">
                 <Controls.Group className="pointer-events-auto w-full flex items-center px-4 py-2 gap-4">
                     <PlayButton className="group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4">
                         {isPaused ? <Play className='w-8 h-8' onClick={handlePlay}/> : <Pause className='w-8 h-8' onClick={handlePause}/>}
                     </PlayButton>
-                    <SeekButton seconds={-10} className='group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4 aria-hidden:hidden'>
+                    <SeekButton seconds={-10} onClick={handleSeekBck} className='group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4 aria-hidden:hidden'>
                         <ArrowLeft className='w-8 h-8'/>
                     </SeekButton>
-                    <SeekButton seconds={10} className='group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4 aria-hidden:hidden'>
+                    <SeekButton seconds={10} onClick={handleSeekFrw} className='group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4 aria-hidden:hidden'>
                         <ArrowRight className='w-8 h-8'/>
                     </SeekButton>
                     <div

@@ -203,7 +203,23 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
           case 'PAUSE':
             player.remoteControl.pause();
             break;
+          case 'SEEK_FRW':
+            const newTimeFrw = player.currentTime + 10;
+            player.remoteControl.seek(newTimeFrw);
+            break;
+          case 'SEEK_BCK':
+            const newTimeBck = player.currentTime - 10;
+            player.remoteControl.seek(newTimeBck);
+            break;
         }
+      },
+
+      _handleKicked: () => {
+        const { roomId } = get();
+
+        if(!roomId) return;
+
+        socket.emit('leave_party', roomId)
       }
     }),
     {

@@ -1,20 +1,12 @@
 import { useEffect } from 'react';
-import { useSocket } from '../context/socket-context';
-import { usePartyStore } from '../stores/partyStore';
+import { useSocket } from '@/context/socket-context';
+import { usePartyStore } from '@/stores/partyStore';
 import type { PartyUser, PlayerAction } from '../types/socket-types';
 import { useNavigate } from 'react-router';
 
 export const SocketManager = () => {
   const socket = useSocket();
   const nav = useNavigate();
-
-  useEffect(() => {
-    const { user, roomId, initializeSocket } = usePartyStore.getState();
-
-    if (user && roomId) {
-      initializeSocket();
-    }
-  }, []);
   
   useEffect(() => {
     if (!socket) return;

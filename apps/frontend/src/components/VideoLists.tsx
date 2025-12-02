@@ -7,7 +7,7 @@ import { useOutletContext } from "react-router"
 import { ChevronRight, ChevronLeft, } from "lucide-react"
 import { useRef } from "react"
 import { StartPartyButton } from "./startPartyButton";
-import type { VideoData, OutletContext } from "@/types/video.types"
+import type { VideoData, OutletContext } from "@/types/video-data-types"
 
 export function VideoLists() {
   const { videos } = useOutletContext<OutletContext>();
