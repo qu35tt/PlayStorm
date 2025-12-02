@@ -15,7 +15,7 @@ export type PlaybackData = {
 }
 
 export type PlayerAction = {
- action: | 'PLAY' | 'PAUSE';
+ action: | 'PLAY' | 'PAUSE' | 'SEEK_FRW' | 'SEEK_BCK';
 }
 
 export interface ClientToServerEvents {
@@ -24,6 +24,7 @@ export interface ClientToServerEvents {
   leave_party: (roomId: string) => void;
   start_playback: (data: PlaybackData) => void;
   playback_action: (action: PlayerAction) => void;
+  kick_user: (usereId: string) => void;
 }
 
 export interface ServerToClientEvents {
@@ -33,4 +34,5 @@ export interface ServerToClientEvents {
   party_joined: (payload?: {members: PartyUser[]}) => void;
   start_playback: (payload?: { videoId: string }) => void;
   sync_playback: (payload?: { action: PlayerAction }) => void;
+  kicked: () => void;
 }

@@ -95,4 +95,14 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.to(roomId).emit('sync_playback', { action: action })
   }
+
+  // @SubscribeMessage('kick_user')
+  // async handleKickUser(@ConnectedSocket() client: Socket, @MessageBody() userId: string ){
+  //   let roomId = client.data.roomId;
+  //   let kickedUserSocketId = await this.roomService.findSocketIdByUserId(userId);
+  //   console.log(kickedUserSocketId);
+  //   if(!kickedUserSocketId) return;
+
+  //   this.server.to(kickedUserSocketId).emit('kicked');
+  // }
 }

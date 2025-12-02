@@ -3,6 +3,10 @@ import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 export class PartyUser{
     @IsString()
     @IsNotEmpty()
+    id: string
+
+    @IsString()
+    @IsNotEmpty()
     username: string
 
     @IsString()
@@ -11,6 +15,10 @@ export class PartyUser{
 }
 
 export class JoinParty{
+    @IsString()
+    @IsNotEmpty()
+    id: string;
+
     @IsString()
     @IsNotEmpty()
     username: string
@@ -47,6 +55,6 @@ export class PlaybackData {
 export enum PlayerAction {
   PLAY = 'PLAY',
   PAUSE = 'PAUSE',
-  SEEK_FORWARD = 'SEEK_FORWARD',
-  SEEK_BACKWARD = 'SEEK_BACKWARD',
+  SEEK_FRW = 'SEEK_FRW',
+  SEEK_BCK = 'SEEK_BCK',
 }

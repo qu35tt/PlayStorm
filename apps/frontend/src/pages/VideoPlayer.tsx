@@ -53,11 +53,7 @@ export function VideoPlayer() {
     }, [id, current])
 
     function canPlay() {
-        console.log(player.current?.remoteControl)
-        // if(player.current) {
-        //     setRemote(player.current.remoteControl)
-        // }
-        return;
+        
     }
 
     if(!current)

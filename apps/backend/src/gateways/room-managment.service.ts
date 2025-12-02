@@ -56,11 +56,21 @@ export class RoomManagmentService {
         }
     }
 
-        public getUsersInRoom(roomId: string): PartyUser[] {
+    public getUsersInRoom(roomId: string): PartyUser[] {
         const userSet = this.rooms.get(roomId);
         if (!userSet) {
             return []; // Return empty array if room is unknown
         }
         return Array.from(userSet);
     }
+
+    // public async findSocketIdByUserId(userId: string): Promise<string | null> {
+    //     // Iterate over the [socketId, { roomId, user }] entries
+    //     for (const [socketId, data] of this.socketToRoom.entries()) {
+    //         if (data.user.id === userId) {
+    //             return socketId;
+    //         }
+    //     }
+    //     return null;
+    // }
 }
