@@ -1,5 +1,5 @@
 import { useModal } from "@/hooks/use-modal-store"
-import type { CardProps } from '@/types/video.types'
+import type { CardProps } from '@/types/video-data-types'
 
 
 
@@ -13,7 +13,7 @@ export function VideoCard({ videoData }: CardProps){
 
     return (
         <div
-            className="flex-shrink-0 w-72 sm:w-80 md:w-96 lg:w-[30rem] m-4 rounded-lg overflow-hidden bg-black cursor-pointer transform hover:scale-105 transition-all duration-200 group"
+            className="flex-shrink-0 w-72 sm:w-80 md:w-96 lg:w-[27.5rem] m-4 rounded-lg overflow-hidden bg-black cursor-pointer transform hover:scale-105 transition-all duration-200 group"
             onClick={handleClick}
             role="button"
             aria-label={`Open ${videoData.name}`}

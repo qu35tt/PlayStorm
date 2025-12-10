@@ -9,6 +9,7 @@ export type VideoData = {
 
 export type OutletContext = {
     videos: VideoData[];
+    searchQuery: string;
 }
 
 export type VideoControlsProps = {
