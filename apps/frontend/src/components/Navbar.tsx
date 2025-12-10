@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@/context/user-context";
 import { useModal } from "@/hooks/use-modal-store";
 import { Separator } from "@/components/ui/separator";
-import type { VideoType, NavbarProps } from '@/types/video.types'
+import type { VideoType, NavbarProps } from '@/types/video-data-types'
 
 
 export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) {

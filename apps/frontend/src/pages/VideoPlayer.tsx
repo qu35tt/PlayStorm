@@ -32,7 +32,7 @@ export function VideoPlayer() {
 
     const { setRemote } = usePartyStore();
 
-    
+    //{current.URL}
 
     useEffect(() => {
         async function getVideo()

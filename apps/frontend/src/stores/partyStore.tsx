@@ -198,7 +198,6 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
         switch(action){
           case 'PLAY':
             player.remoteControl.play()
-            console.log("PLAY EVENT");
             break;
           case 'PAUSE':
             player.remoteControl.pause();

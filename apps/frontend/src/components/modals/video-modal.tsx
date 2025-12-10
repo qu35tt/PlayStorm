@@ -1,6 +1,7 @@
 import { useModal } from "@/hooks/use-modal-store";
 import { useNavigate } from "react-router"
 import { usePartyStore } from "@/stores/partyStore";
+import { cn } from "@/lib/utils";
 
 import {
   Dialog,
@@ -85,10 +86,14 @@ export function VideoModal(){
 
   const formatTime = (seconds: number) => Math.floor(seconds / 60) + " m"
 
+  const isSeries = data?.videotype === 'SERIES';
+
+  const contentHeightClass = isSeries? "h-[80vh]" : ""
+
   return(
     <Dialog open={isModalOpen} onOpenChange={onClose}>
       <DialogContent className="w-3/4 bg-[#0F2340] text-white p-0 m-0 border-0">
-        <div className="h-[80vh] overflow-y-auto">
+        <div className={cn(contentHeightClass ,"overflow-y-auto")}>
           <DialogHeader className="w-full h-[30rem] m-0 p-0 bg-cover bg-bottom" style={{ backgroundImage: `url(${data?.banner ?? ""})` }}>
             <div className="w-full h-full bg-black/65 flex flex-col justify-end items-start">
               <div className="m-8 space-y-4">

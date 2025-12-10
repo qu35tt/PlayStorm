@@ -5,6 +5,7 @@ import { ModalProvider } from "../providers/modal-provider"
 import { useState, useEffect } from "react"
 import { useUserStore } from "@/stores/userStore"
 import axios from "axios"
+import type { VideoType} from "@/types/video-data-types"
 
 type VideoData = {
     id: string
@@ -13,8 +14,6 @@ type VideoData = {
     thumbnail: string
     videotype: 'MOVIE' | 'SERIES'
 }
-
-type VideoType = "ALL" | "MOVIE" | "SERIES"
 
 export function Home() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -27,7 +26,6 @@ export function Home() {
           try{
             const response = await axios.get(`${import.meta.env.VITE_API_URL}video`, { headers: { Authorization: `Bearer ${user.token}` } });
             setVideos(response.data);
-
           }
           catch(err){
             console.error(err)
@@ -45,7 +43,7 @@ export function Home() {
     return(
         <div className="w-screen h-screen flex flex-col text-white">
             <Navbar setSearchQuery={setSearchQuery} setType={setType} selectedType={type} />
-            <Outlet context={{ videos: filteredVideos }} />
+            <Outlet context={{ videos: filteredVideos, searchQuery: searchQuery }} />
             <Footer />
             <ModalProvider />
         </div>
