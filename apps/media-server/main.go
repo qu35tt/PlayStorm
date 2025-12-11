@@ -5,30 +5,40 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
-	// * Directory obsahující data s videii - Změňte tuto cestu, pokud se data nachází jinde.
 	hlsDir := "./videos"
 
-	// ! Zde checkuji zda directory existuje a pokud ne vypíšu do konzole kritickou chybu (Fatal Error).
-	if _, err := os.Stat(hlsDir); os.IsNotExist(err) {
-		log.Fatalf("HLS directory %s does not exist", hlsDir)
-	}
-
-	// * Tady si vytvořím File Server pro statické soubory (M3U8 playlisty a TS segmenty) z adresáře 'hlsDir'.
 	fs := http.FileServer(http.Dir(hlsDir))
 
-	// TODO: Nastavení handleru pro cestu "/hls/".
-	// http.StripPrefix("/hls/", fs) zajistí, že z URL (např. /hls/video.m3u8) se odstraní "/hls/" a FileServer pak hledá soubor "video.m3u8" v "./videos".
-	// wrapped s withCORS() pro správné nastavení hlaviček pro přehrávače v prohlížečích.
-	http.Handle("/hls/", withCORS(http.StripPrefix("/hls/", fs)))
+	http.Handle("/hls/", withCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := strings.TrimPrefix(r.URL.Path, "/hls/")
 
-	// * Zde spustím HTTP server na definovaném portu.
+		path = strings.TrimSuffix(path, "/")
+
+		ext := filepath.Ext(path)
+		
+		if path != "" && ext == "" {
+
+			expectedRelativePath := filepath.Join(hlsDir, path, path+".m3u8")
+
+			if _, err := os.Stat(expectedRelativePath); err == nil {
+				newURL := fmt.Sprintf("/hls/%s/%s.m3u8", path, path)
+				http.Redirect(w, r, newURL, http.StatusFound)
+				return
+			} else {
+				log.Printf("ERROR: File not found at %s. (Error: %v)", expectedRelativePath, err)
+			}
+		}
+
+		http.StripPrefix("/hls/", fs).ServeHTTP(w, r)
+	})))
+
 	port := 8080
 	fmt.Printf("Starting HLS server on http://localhost:%d/hls/\n", port)
-
-	// ! log.Fatal spustí server a v případě chyby při startu (např. obsazený port) program ukončí a vypíše chybu.
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }
 

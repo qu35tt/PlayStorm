@@ -60,7 +60,7 @@ export function VideoPlayer() {
         return <h1>Loading ...</h1>
     
     return(
-        <MediaPlayer title={current.name} load="visible" src={current.URL} className='realtive w-screen h-screen' ref={player} onCanPlay={canPlay}>
+        <MediaPlayer title={current.name} load="visible" src={{src: current.URL, type: 'application/x-mpegurl'}} className='realtive w-screen h-screen' ref={player} onCanPlay={canPlay}>
             <MediaProvider />
             <VideoControls name={current!.name} />
         </MediaPlayer>
