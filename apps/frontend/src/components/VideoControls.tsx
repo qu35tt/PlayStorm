@@ -3,6 +3,8 @@ import { Play, Pause, Minimize, Maximize, ArrowRight, ArrowLeft, VolumeX, Volume
 import { useState, useRef, useEffect } from 'react';
 import { usePartyStore } from '@/stores/partyStore';
 import type { VideoControlsProps } from '@/types/video-data-types'
+import { useNavigate } from 'react-router';
+import { Button } from './ui/button';
 
 export function VideoControls({ name }: VideoControlsProps) {  
     const isPaused = useMediaState('paused');
@@ -11,6 +13,8 @@ export function VideoControls({ name }: VideoControlsProps) {
     const [showVolume, setShowVolume] = useState(false);
     const hideTimerRef = useRef<number | null>(null);
     const playback_action = usePartyStore((state) => state.playback_action);
+
+    const nav = useNavigate();
 
     function showVolumePop(){
         if(hideTimerRef.current){
@@ -44,6 +48,10 @@ export function VideoControls({ name }: VideoControlsProps) {
         playback_action({action: 'SEEK_BCK'})
     }
 
+    const handleReturn = () => {
+        nav('/home')
+    }
+
     useEffect(() => {
         return () => {
             if(hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
@@ -52,8 +60,15 @@ export function VideoControls({ name }: VideoControlsProps) {
 
     return (
         <>
-            <Controls.Root className="data-[visible]:opacity-100 absolute bottom-0 left-0 z-10 w-full h-[5rem] flex flex-col from-black/60 to-transparent opacity-0 transition-opacity pointer-events-none text-white">
-                <Controls.Group className="pointer-events-auto w-full flex items-center px-4 py-2 gap-4">
+            
+            <Controls.Root className="data-[visible]:opacity-100 absolute left-0 z-10 w-full h-screen flex flex-col items-between from-black/60 to-transparent opacity-0 transition-opacity pointer-events-none text-white">
+                <Button 
+                    className='pointer-events-auto absolute top-0 left-0 w-20 h-20 p-4 m-4 border-2 border-white bg-transparent rounded-full flex justify-center items-center text-white' 
+                    onClick={handleReturn}
+                >
+                    <ArrowLeft className='w-full h-full'/> 
+                </Button>
+                <Controls.Group className="absolute bottom-0 left-0 pointer-events-auto w-full flex items-center p-6 gap-4">
                     <PlayButton className="group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4">
                         {isPaused ? <Play className='w-8 h-8' onClick={handlePlay}/> : <Pause className='w-8 h-8' onClick={handlePause}/>}
                     </PlayButton>

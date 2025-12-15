@@ -17,8 +17,6 @@ type Video = {
     URL: string
 }
 
-
-
 export function VideoPlayer() {
     
     const user = useUserStore()
@@ -60,9 +58,9 @@ export function VideoPlayer() {
         return <h1>Loading ...</h1>
     
     return(
-        <MediaPlayer title={current.name} load="visible" src={{src: current.URL, type: 'application/x-mpegurl'}} className='realtive w-screen h-screen' ref={player} onCanPlay={canPlay}>
-            <MediaProvider />
+        <MediaPlayer title={current.name} load="visible" src={{src: `http://localhost:8080/hls/${id.id}`, type: 'application/x-mpegurl'}} className='realtive w-screen h-screen' ref={player} onCanPlay={canPlay}>
             <VideoControls name={current!.name} />
+            <MediaProvider />
         </MediaPlayer>
     )
 }

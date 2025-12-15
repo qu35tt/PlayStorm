@@ -1,6 +1,7 @@
 import { usePartyStore } from '@/stores/partyStore';
 import { useModal } from "@/hooks/use-modal-store";
 import { MemberCard } from "../MemberCard";
+import { Chat } from "@/components/chat"
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "../ui/dialog";
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -8,6 +9,7 @@ import { toast } from 'sonner';
 import { useUser } from "@/context/user-context";
 import { useUserStore } from "@/stores/userStore";
 import { useEffect } from 'react';
+import { Separator } from '../ui/separator';
 
 export function PartyModal() {
   const { isOpen, onClose, onOpen, type } = useModal();
@@ -104,15 +106,16 @@ export function PartyModal() {
                   />
                 ))}
               </div>
+              <Separator orientation='vertical' />
               <div
-                className="w-full h-full border-red-900 border-1"
+                className="w-full h-full"
               >
-                <h1>Chat</h1>
+                <Chat />
               </div>
             </div>
           </DialogHeader>
           <DialogFooter className="w-full">
-            <Button className="w-full" onClick={handleLeaveParty}>Leave Party</Button>
+            <Button className="w-full bg-red-600 hover:bg-gray-500" onClick={handleLeaveParty}>Leave Party</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -222,5 +222,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /generated/prisma
 
+./media-server/videos/*
+./media-server/videos
 
 .env
