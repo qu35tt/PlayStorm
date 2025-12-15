@@ -23,7 +23,6 @@ model Video {
   name      String
   description String?
   length    Int?
-  URL       String?
   thumbnail String
   banner    String
   genre_id  String
@@ -54,7 +53,6 @@ id            String   @id @default(uuid())
   number        Int
   
   length        Int      
-  URL           String   
   thumbnail     String?
   
   season_id     String

@@ -30,6 +30,7 @@ export function ProfileSettings(){
     const [buttonOn, setButtonOn] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         async function getProfileData(){
@@ -102,6 +103,8 @@ export function ProfileSettings(){
 
     async function handleFileUpload(){
 
+        setIsUploading(true);
+
         if (!file) {
             toast.error("No file selected to upload");
             return;
@@ -130,7 +133,7 @@ export function ProfileSettings(){
         <>
             <div className="h-1/4 flex flex-row items-center px-8">
                 <div className="relative w-[13rem] h-[13rem] mx-8">
-                    <label className="cursor-pointer block w-full h-full rounded-full overflow-hidden border border-gray-300">
+                    <label className="cursor-pointer block w-full h-full rounded-full overflow-hidden hover:border-8 border-cyan-500 transition-all duration-150">
                     <img
                         src={preview || user_.userCredentials?.avatarUrl || "/default_avatar.webp"}
                         alt="Avatar preview"
@@ -144,8 +147,7 @@ export function ProfileSettings(){
                     />
                     </label>
                 </div>
-                <Button className="bg-[#3B82F6] text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0" onClick={handleFileUpload}>Upload avatar</Button>
-                {/* <Button className="bg-gray-600 text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0" onClick={handleFileDelete}>Delete avatar</Button> */}
+                <Button className="bg-[#3B82F6] text-md w-[8rem] h-[3rem] mx-auto cursor-pointer hover:bg-[#06B6D4] border-0" disabled={isUploading} onClick={handleFileUpload}>Upload avatar</Button>
             </div>
             <Separator className="bg-gray-400/70"/>
             

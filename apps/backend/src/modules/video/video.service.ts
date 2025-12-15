@@ -37,7 +37,6 @@ export class VideoService {
                     id: true,
                     title: true,
                     length: true,
-                    URL: true,
                     season: {
                         select: {
                             name: true,
@@ -54,7 +53,6 @@ export class VideoService {
         if(episode) {
             return {
                 type: 'EPISODE',
-                URL: episode.URL,
                 name: `${episode.season.video.name} - ${episode.title}`,
             }
         }
@@ -64,7 +62,6 @@ export class VideoService {
             select: {
                 id: true,
                 name: true,
-                URL: true,
                 videotype: true,
                 banner: true
             }
@@ -78,7 +75,6 @@ export class VideoService {
 
         return {
             type: 'MOVIE',
-            URL: video.URL,
             name: video.name,
         };
 
@@ -95,7 +91,6 @@ export class VideoService {
                 select: {
                     id: true,
                     title: true,
-                    URL: true,
                     length: true
                 }
             });
@@ -169,18 +164,6 @@ export class VideoService {
         }
         catch(err){
             throw new InternalServerErrorException(err)
-        }
-    }
-
-    async consumetTest() {
-        try {
-            let anime = new ANIME.AnimePahe();
-            const results = await anime.fetchAnimeInfo("adb84358-8fec-fe80-1dc5-ad6218421dc1");
-            console.log("Search completed:", results);
-            return results;
-        } catch (err) {
-            console.error("Error in consumetTest:", err);
-            throw new InternalServerErrorException("Failed to fetch anime data");
         }
     }
 }

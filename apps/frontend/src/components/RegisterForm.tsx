@@ -14,6 +14,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { useUserStore } from '../stores/userStore'
 
+import { toast } from "sonner";
+
 export function RegisterForm({stateChanger}: any) {
     const user = useUserStore()
     const nav = useNavigate();
@@ -28,11 +30,13 @@ export function RegisterForm({stateChanger}: any) {
             .then(function (response){
                 user.setId(response.data.id);
                 user.setToken(response.data.access_token);
+                toast.success("User Registered Succesfully!")
 
                 nav("/home");
             })
             .catch(function (err){
                 console.error(err)
+                toast.error("Something went wrong!")
             })
         } 
         catch(err){
