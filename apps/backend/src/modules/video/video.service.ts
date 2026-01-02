@@ -1,16 +1,13 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { ANIME } from "@consumet/extensions"
-
 @Injectable()
 export class VideoService {
     constructor(private prisma: PrismaService) {}
-    private animepahe = new ANIME.Gogoanime()
 
-    getVideos() {
+    async getVideos() {
         try{
-            const videos = this.prisma.video.findMany({
+            const videos = await this.prisma.video.findMany({
                 take: 40,
                 select: {
                     id: true,
@@ -103,9 +100,9 @@ export class VideoService {
         }
     }
 
-    getVideoData(id: string) {
+    async getVideoData(id: string) {
         try{
-            const video = this.prisma.video.findFirst({
+            const video = await this.prisma.video.findFirst({
                 where: {
                     id
                 },

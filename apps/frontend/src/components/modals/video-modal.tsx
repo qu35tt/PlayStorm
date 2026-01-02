@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 
@@ -34,7 +35,7 @@ export function VideoModal(){
   
   const { isOpen, onClose, type, videoId } = useModal();
 
-  const [data, setData] = useState<VideoModalData | null>();
+  const [data, setData] = useState<VideoModalData | null>(null);
   const [selectedSeasonIndex, setSelectedSeasonIndex] = useState<number>(0);
 
   const party = usePartyStore()
@@ -42,14 +43,14 @@ export function VideoModal(){
   const isModalOpen = isOpen && type === "video";
 
   useEffect(() => {
-    if (!isModalOpen || !videoId) return;
-
-    console.log("Fetching data for modal");
-
-    if (data !== null) {
+    if (!isModalOpen) {
       setData(null);
       setSelectedSeasonIndex(0);
     }
+  }, [isModalOpen]);
+
+  useEffect(() => {
+    if (!isModalOpen || !videoId) return;
 
     async function getData() {
       try {
@@ -59,7 +60,7 @@ export function VideoModal(){
         );
         setData(response.data);
       } catch (err) {
-        console.error("Error fetching video data:", err);
+        console.error("[VideoModal] Error fetching video data:", err);
       }
     }
     getData();
@@ -108,7 +109,7 @@ export function VideoModal(){
             <DialogHeader className="w-full h-[30rem] m-0 p-0 bg-cover bg-bottom" style={{ backgroundImage: `url(${data?.banner ?? ""})` }}>
               <div className="w-full h-full bg-black/65 flex flex-col justify-end items-start">
                 <div className="m-8 space-y-4">
-                  <h2 className="text-4xl font-extrabold">{data?.name}</h2>         
+                  <DialogTitle className="text-4xl font-extrabold">{data?.name}</DialogTitle>       
                   <Button className="w-[10rem] bg-white hover:bg-gray-300 text-black cursor-pointer" onClick={handleClick}><Play className="w-4 h-4 "/> Play</Button>
                 </div>
               </div>

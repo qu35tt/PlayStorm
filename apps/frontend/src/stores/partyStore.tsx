@@ -25,6 +25,7 @@ export type PartyStore = {
   leaveParty: () => void;
   start_playback: (videoId: string) => void;
   playback_action: (action: PlayerAction) => void;
+  end_playback: () => void;
   // Actions to be called by SocketManager
   _handlePartyCreated: (roomId: string) => void;
   _handleNewUserJoined: (userInfo: PartyUser) => void;
@@ -32,6 +33,7 @@ export type PartyStore = {
   _handlePartyJoined: (members: PartyUser[]) => void;
   _handleStart_playback: (navigate: any, data: PlaybackData) => void;
   _handlePlayback_action: (action: PlayerAction) => void;
+  _handleEndPlayback: (navigate: any) => void;
 };
 
 type PersistedData = {
@@ -134,6 +136,13 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       playback_action: (action: PlayerAction) => {
         socket.emit('playback_action', action)
       },
+
+      end_playback: () => {
+        const id = get().roomId
+        console.log("End playback was called in room: ", id)
+        socket.emit('end_playback', id!)
+      },
+
       // These actions will be called from SocketManager
       _handlePartyCreated: (roomId) => {
         const currentUser = get().user;
@@ -142,6 +151,14 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
           members: currentUser ? [currentUser] : [],
         });
         
+      },
+
+      _handleEndPlayback(nav: any) {
+        this.videoId = null
+        this.remote = null
+
+        nav("/home")
+        console.log("Ended Playback")
       },
 
       _handleNewUserJoined: (userInfo) => {

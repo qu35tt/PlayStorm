@@ -25,6 +25,7 @@ export interface ClientToServerEvents {
   start_playback: (data: PlaybackData) => void;
   playback_action: (action: PlayerAction) => void;
   kick_user: (usereId: string) => void;
+  end_playback: (roomId: string) => void;
 }
 
 export interface ServerToClientEvents {
@@ -34,5 +35,6 @@ export interface ServerToClientEvents {
   party_joined: (payload?: {members: PartyUser[]}) => void;
   start_playback: (payload?: { videoId: string }) => void;
   sync_playback: (payload?: { action: PlayerAction }) => void;
+  end_playback: () => void;
   kicked: () => void;
 }

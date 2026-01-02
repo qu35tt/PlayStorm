@@ -12,7 +12,7 @@ export function VideoControls({ name }: VideoControlsProps) {
     isMuted = useMediaState('muted');
     const [showVolume, setShowVolume] = useState(false);
     const hideTimerRef = useRef<number | null>(null);
-    const playback_action = usePartyStore((state) => state.playback_action);
+    const { playback_action, end_playback } = usePartyStore();
 
     const nav = useNavigate();
 
@@ -49,6 +49,8 @@ export function VideoControls({ name }: VideoControlsProps) {
     }
 
     const handleReturn = () => {
+        end_playback();
+        console.log("end playback")
         nav('/home')
     }
 
