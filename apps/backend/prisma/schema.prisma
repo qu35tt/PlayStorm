@@ -8,7 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {W
+model User {
   id           String         @id @default(uuid())
   username     String
   password     String
@@ -16,6 +16,8 @@ model User {W
   createdAt    DateTime       @default(now())
   lastUpdate   DateTime       @updatedAt
   avatarUrl    String?
+
+  watchProgress WatchProgress[] @relation("Users progress")
 }
 
 model Video {
@@ -40,14 +42,14 @@ model Season {
   videoId String
   video Video @relation(fields: [videoId], references: [id], name: "VideoToSeason")
 
-  episodes Episode[]
+  episodes Episode[] @relation("Episodes Season ")
 
   createdAt DateTime @default(now())
   lastUpdate DateTime @updatedAt @default(now())
 }
 
 model Episode {
-id            String   @id @default(uuid())
+  id            String   @id @default(uuid())
   title         String
   description   String?
   number        Int
@@ -56,9 +58,24 @@ id            String   @id @default(uuid())
   thumbnail     String?
   
   season_id     String
-  season        Season   @relation(fields: [season_id], references: [id], onDelete: Cascade)
+  season        Season   @relation(fields: [season_id], references: [id], onDelete: Cascade, name: "Episodes Season ")
   
   createdAt     DateTime @default(now())
+
+  watchProgress WatchProgress[] @relation("Episode Progression")
+}
+
+model WatchProgress {
+  id            String   @id @default(uuid())
+  user_id       String
+  user          User @relation(fields: [user_id], references: [id], name: "Users progress")
+
+  episode_id    String
+  episode       Episode @relation(fields: [episode_id], references: [id], name: "Episode Progression")
+
+  type          VideoType
+  last_position BigInt
+  isFinished    Boolean
 }
 
 model Genre {

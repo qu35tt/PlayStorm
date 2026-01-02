@@ -47,12 +47,18 @@ export const SocketManager = () => {
       }
     }
 
+    const onEndPlayback = () => {
+      console.log("end playback was called and handling")
+      usePartyStore.getState()._handleEndPlayback(nav);
+    }
+
     socket.on('party_created', onPartyCreated);
     socket.on('new_user_joined', onNewUserJoined);
     socket.on('user_left', onUserLeft);
     socket.on('party_joined', onPartyJoined);
     socket.on('start_playback', onStartPlayback);
     socket.on('sync_playback', onPlaybackAction);
+    socket.on('end_playback', onEndPlayback);
 
     return () => {
       socket.off('party_created', onPartyCreated);
@@ -61,6 +67,7 @@ export const SocketManager = () => {
       socket.off('party_joined', onPartyJoined);
       socket.off('start_playback', onStartPlayback);
       socket.off('sync_playback', onPlaybackAction);
+      socket.off('end_playback', onEndPlayback);
     };
   }, [socket]);
 

@@ -30,8 +30,6 @@ export function VideoPlayer() {
 
     const { setRemote } = usePartyStore();
 
-    //{current.URL}
-
     useEffect(() => {
         async function getVideo()
         {
@@ -58,7 +56,7 @@ export function VideoPlayer() {
         return <h1>Loading ...</h1>
     
     return(
-        <MediaPlayer title={current.name} load="visible" src={{src: `http://localhost:8080/hls/${id.id}`, type: 'application/x-mpegurl'}} className='realtive w-screen h-screen' ref={player} onCanPlay={canPlay}>
+        <MediaPlayer title={current.name} load="visible" src={{src: `${import.meta.env.VITE_MEDIA_SERVER}/${id.id}`, type: 'application/x-mpegurl'}} className='realtive w-screen h-screen' ref={player} onCanPlay={canPlay} keyTarget='player'>
             <VideoControls name={current!.name} />
             <MediaProvider />
         </MediaPlayer>
