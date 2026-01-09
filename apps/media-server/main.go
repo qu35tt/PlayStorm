@@ -33,7 +33,7 @@ func main() {
         }
 
         if len(parts) == 1 {
-            expectedPath := filepath.Join(hlsDir, realFolderName, "video.m3u8")
+            expectedPath := filepath.Join(hlsDir, realFolderName, "master.m3u8")
 
             if _, err := os.Stat(expectedPath); err == nil {
                 newURL := fmt.Sprintf("/hls/%s/video.m3u8", episodeID)

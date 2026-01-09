@@ -4,6 +4,7 @@ export type VideoModalData = {
   description?: string;
   length: number;
   banner: string;
+  rls_year: number;
   videotype: "MOVIE" | "SERIES";
   genre: {
     id: string;
