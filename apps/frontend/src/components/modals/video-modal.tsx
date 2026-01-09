@@ -141,7 +141,7 @@ export function VideoModal(){
                   <h3 className="text-2xl font-bold mb-4">Episodes</h3>
                   {data.seasons.length > 0 && (
                       <div className="flex justify-end">
-                          <DropdownMenu>
+                          {data.seasons.length > 1 && <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                   <Button 
                                       variant="outline" 
@@ -166,7 +166,7 @@ export function VideoModal(){
                                       </DropdownMenuItem>
                                   ))}
                               </DropdownMenuContent>
-                          </DropdownMenu>
+                          </DropdownMenu>}
                       </div>
                   )}
                 </div>

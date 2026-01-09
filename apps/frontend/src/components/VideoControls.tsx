@@ -5,6 +5,9 @@ import { usePartyStore } from '@/stores/partyStore';
 import type { VideoControlsProps } from '@/types/video-data-types'
 import { useNavigate } from 'react-router';
 import { Button } from './ui/button';
+import { CaptionButton } from '@vidstack/react';
+// See "Icons" component page for setup before importing the following:
+import { CaptionsOff, Captions } from 'lucide-react';
 
 export function VideoControls({ name }: VideoControlsProps) {  
     const isPaused = useMediaState('paused');
@@ -119,13 +122,20 @@ export function VideoControls({ name }: VideoControlsProps) {
                             <TimeSlider.TrackFill className="bg-indigo-400 absolute h-full w-[var(--slider-fill)] rounded-sm will-change-[width]" />
                             <TimeSlider.Progress className="absolute z-10 h-full w-[var(--slider-progress)] rounded-sm bg-white/50 will-change-[width]" />
                         </TimeSlider.Track>
+                        <TimeSlider.Thumb className="absolute left-[var(--slider-fill)] top-1/2 z-20 h-[15px] w-[15px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#cacaca] bg-white opacity-0 ring-white/40 transition-opacity group-data-[active]:opacity-100 group-data-[dragging]:ring-4 will-change-[left]" />
                         <Time type="duration" className="font-bold text-white text-center" />
                     </TimeSlider.Root>
                     <h2 className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] text-center text-3xl font-semibold py-2 truncate">{name}</h2>
-                    <FullscreenButton className="group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4 aria-hidden:hidden ml-auto">
-                        <Maximize className="w-8 h-8 group-data-[active]:hidden" />
-                        <Minimize className="w-8 h-8 hidden group-data-[active]:block" />
-                    </FullscreenButton>
+                    <div className='relative space-x-4 ml-auto'>
+                        <CaptionButton className="group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4 aria-hidden:hidden">
+                                <Captions className="w-8 h-8 hidden group-data-[active]:block" /> 
+                                <CaptionsOff className="w-8 h-8 group-data-[active]:hidden" />
+                        </CaptionButton>
+                        <FullscreenButton className="group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none ring-inset hover:bg-white/20 data-[focus]:ring-4 aria-hidden:hidden">
+                            <Maximize className="w-8 h-8 group-data-[active]:hidden" />
+                            <Minimize className="w-8 h-8 hidden group-data-[active]:block" />
+                        </FullscreenButton>
+                    </div>
                 </Controls.Group>
             </Controls.Root>
         </>

@@ -7,6 +7,11 @@ export type VideoData = {
     thumbnail: string
 }
 
+export type Video = {
+    name: string,
+    URL: string
+}
+
 export type OutletContext = {
     videos: VideoData[];
     searchQuery: string;

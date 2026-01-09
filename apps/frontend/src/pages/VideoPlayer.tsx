@@ -9,24 +9,18 @@ import { useUserStore } from '@/stores/userStore';
 import { useParams } from 'react-router';
 import { useState, useEffect, useRef } from 'react';
 import { usePartyStore } from '@/stores/partyStore';
+import type { Video } from "@/types/video-data-types";
+import { Captions } from "@vidstack/react";
 
-
-
-type Video = {
-    name: string,
-    URL: string
-}
 
 export function VideoPlayer() {
     
     const user = useUserStore()
-    const id = useParams<{ id: string }>();
+    const { id } = useParams<{ id: string }>();
 
     const [current, setCurrent] = useState<Video | null>(null);
     
-    let player = useRef<MediaPlayerInstance>(null);
-
-    player.current?.remoteControl.setTarget(player.current)
+    const player = useRef<MediaPlayerInstance>(null);
 
     const { setRemote } = usePartyStore();
 
@@ -34,7 +28,7 @@ export function VideoPlayer() {
         async function getVideo()
         {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}video/stream/${id.id}`,  { headers: { Authorization: `Bearer ${user.token}` } })
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}video/stream/${id}`,  { headers: { Authorization: `Bearer ${user.token}` } })
                 setCurrent(response.data);
                 if(player.current) {
                     setRemote(player.current.remoteControl)
@@ -46,7 +40,8 @@ export function VideoPlayer() {
         }
         
         if(id) getVideo()
-    }, [id, current])
+
+    }, [id, user.token])
 
     function canPlay() {
         
@@ -56,9 +51,10 @@ export function VideoPlayer() {
         return <h1>Loading ...</h1>
     
     return(
-        <MediaPlayer title={current.name} load="visible" src={{src: `${import.meta.env.VITE_MEDIA_SERVER}/${id.id}`, type: 'application/x-mpegurl'}} className='realtive w-screen h-screen' ref={player} onCanPlay={canPlay} keyTarget='player'>
-            <VideoControls name={current!.name} />
+        <MediaPlayer title={current.name} load="visible" src={{src: `${import.meta.env.VITE_MEDIA_SERVER}/${id}/master.m3u8`, type: 'application/x-mpegurl'}} className='relative w-screen h-screen flex justify-center' ref={player} onCanPlay={canPlay} keyTarget='player' crossOrigin>
             <MediaProvider />
+            <Captions className="media-captions absolute bottom-1/12 z-50 text-4xl text-white bg-black/50 p-4 rounded-md select-none break-words opacity-100 transition-[opacity] duration-300 media-captions:opacity-100 media-preview:opacity-0 aria-hidden:hidden" />
+            <VideoControls name={current.name} />
         </MediaPlayer>
     )
 }

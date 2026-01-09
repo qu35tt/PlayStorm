@@ -27,6 +27,7 @@ model Video {
   length    Int?
   thumbnail String
   banner    String
+  rls_year  Int?
   genre_id  String
   videotype VideoType
   favorites Favorites[]
