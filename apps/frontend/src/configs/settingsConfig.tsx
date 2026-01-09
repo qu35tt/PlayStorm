@@ -1,5 +1,6 @@
-import { User, VideoIcon, PartyPopper } from "lucide-react"
+import { User, Captions, } from "lucide-react"
 import { ProfileSettings } from "@/components/settings/ProfileSettings"
+import { CaptionsSettings } from "@/components/settings/CaptionsSettings"
 
 export const settingsConfig = {
     profile: {
@@ -7,11 +8,11 @@ export const settingsConfig = {
         icon: User,
         component: ProfileSettings
     },
-    // video: {
-    //     name: "Video",
-    //     icon: VideoIcon,
-    //     component: VideoSettings
-    // },
+    captions: {
+        name: "Captions",
+        icon: Captions,
+        component: CaptionsSettings
+    },
     // party: {
     //     name: "Party",
     //     icon: PartyPopper,
