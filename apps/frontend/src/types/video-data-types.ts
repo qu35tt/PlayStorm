@@ -4,7 +4,8 @@ export type VideoData = {
     id: string
     name: string
     length: number,
-    thumbnail: string
+    banner: string
+    description: string
 }
 
 export type Video = {

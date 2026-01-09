@@ -154,6 +154,7 @@ export class VideoService {
                     id: true,
                     name: true,
                     banner: true,
+                    description: true
                 }
             });
 
