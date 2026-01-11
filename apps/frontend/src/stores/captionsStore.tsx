@@ -1,14 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-// 1. Define the shape of the styling options
 export interface CaptionStyles {
   fontSize: number;
   textColor: string;
   backgroundColor: string;
   backgroundOpacity: number;
   borderRadius: number;
-  verticalPosition: number; // Percentage from bottom
+  verticalPosition: number;
   fontWeight: string;
 }
 
@@ -24,7 +23,6 @@ interface CaptionState {
 export const useCaptionStore = create<CaptionState>()(
   persist(
     (set) => ({
-      // Initial State
       styles: {
         fontSize: 24,
         textColor: '#FFFFFF',
@@ -48,7 +46,7 @@ export const useCaptionStore = create<CaptionState>()(
 
       resetStyles: () => set((state) => ({
         styles: {
-          ...state.styles, // Keep current text, just reset visuals
+          ...state.styles,
           fontSize: 24,
           textColor: '#ffffff',
           backgroundColor: '#000000',
@@ -60,7 +58,7 @@ export const useCaptionStore = create<CaptionState>()(
       })),
     }),
     {
-      name: 'caption-settings', // Unique name for localStorage key
+      name: 'caption-settings',
     }
   )
 );

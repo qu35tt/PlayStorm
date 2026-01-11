@@ -10,15 +10,29 @@ import {
 import { Label } from "../ui/label"
 import { ChevronDown } from "lucide-react"
 import { EDITOR_OPTIONS } from "@/configs/editorOptions"
+import { useEffect } from "react"
  
 export function CaptionsSettings() {
     const { styles, updateStyle, currentCaptionText } = useCaptionStore()
     const options = EDITOR_OPTIONS
 
+    useEffect(() => {
+
+    }, [styles])
+
     return(
         <div className="w-full h-full flex flex-col justify-center items-center space-y-4">
             <div className="w-3/4 h-1/4 border-2 border-white bg-gray-600 flex items-center justify-center">
-                <h2 className="text-center">{currentCaptionText}</h2>
+                <h2 className="text-center"
+                style ={{
+                    fontSize: styles.fontSize,
+                    fontWeight: styles.fontWeight,
+                    color: styles.textColor,
+                    backgroundColor: styles.backgroundColor
+                }}
+                >
+                    {currentCaptionText}
+                </h2>
             </div>
         <div className="space-x-4 flex flex-wrap flex-row">
                 <div>

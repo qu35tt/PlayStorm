@@ -41,7 +41,7 @@ export function ProfileModal() {
   }, [user.userId, user.token]);
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open={isModalOpen} onOpenChange={onClose}>
       <DialogContent className="md:w-3/4 w-2/4 h-4/5 bg-[#0E111A] text-white p-0 m-0 overflow-hidden border-0">
         <DialogHeader className="w-full h-full m-0 p-0 flex flex-row">
           <div className="hidden md:block w-1/4 h-full border-r border-gray-700">

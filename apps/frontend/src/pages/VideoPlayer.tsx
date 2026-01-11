@@ -6,6 +6,7 @@ import { VideoControls } from "../components/VideoControls"
 import axios from "axios"
 
 import { useUserStore } from '@/stores/userStore';
+import { useCaptionStore } from "@/stores/captionsStore"
 import { useParams } from 'react-router';
 import { useState, useEffect, useRef } from 'react';
 import { usePartyStore } from '@/stores/partyStore';
@@ -16,6 +17,7 @@ import { Captions } from "@vidstack/react";
 export function VideoPlayer() {
     
     const user = useUserStore()
+    const { styles } = useCaptionStore()
     const { id } = useParams<{ id: string }>();
 
     const [current, setCurrent] = useState<Video | null>(null);
@@ -53,7 +55,14 @@ export function VideoPlayer() {
     return(
         <MediaPlayer title={current.name} load="visible" src={{src: `${import.meta.env.VITE_MEDIA_SERVER}/${id}/master.m3u8`, type: 'application/x-mpegurl'}} className='relative w-screen h-screen flex justify-center' ref={player} onCanPlay={canPlay} keyTarget='player' crossOrigin>
             <MediaProvider />
-            <Captions className="media-captions absolute bottom-1/12 z-50 text-4xl text-white bg-black/50 p-4 rounded-md select-none break-words opacity-100 transition-[opacity] duration-300 media-captions:opacity-100 media-preview:opacity-0 aria-hidden:hidden" />
+            <Captions className="media-captions absolute bottom-1/12 z-50 p-4 rounded-md select-none break-words opacity-100 transition-[opacity] duration-300 media-captions:opacity-100 media-preview:opacity-0 aria-hidden:hidden"
+                style={{
+                    fontSize: styles.fontSize,
+                    fontWeight: styles.fontWeight,
+                    color: styles.textColor,
+                    backgroundColor: styles.backgroundColor
+                }}
+            />
             <VideoControls name={current.name} />
         </MediaPlayer>
     )
