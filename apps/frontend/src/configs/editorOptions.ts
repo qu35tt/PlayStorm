@@ -1,6 +1,6 @@
 export const EDITOR_OPTIONS = {
     colors: [
-        { label: "Default", value: "inherit", hex: "transparent" },
+        { label: "Default", value: "text-white", hex: "#FFFFFF" },
         { label: "Red", value: "text-red-500", hex: "#ef4444" },
         { label: "Blue", value: "text-blue-500", hex: "#3b82f6" },
         { label: "Green", value: "text-green-500", hex: "#22c55e" },
@@ -13,14 +13,15 @@ export const EDITOR_OPTIONS = {
     ],
     backgroundColor: [
         { label: "Default", value: "inherit", hex: "transparent" },
+        { label: "Black", value: "text-black-500", hex: "#000000" },
         { label: "Red", value: "text-red-500", hex: "#ef4444" },
         { label: "Blue", value: "text-blue-500", hex: "#3b82f6" },
         { label: "Green", value: "text-green-500", hex: "#22c55e" },
     ],
     fontWeight: [
-        { label: "normal", value: 'font-normal' },
-        { label: "medium", value: 'font-medium' },
-        { label: "bold", value: 'font-bold' },
-        { label: "extrabold", value: 'font-extrabold' },
+        { label: "normal", value: '400' },
+        { label: "bold", value: '500' },
+        { label: "bolder", value: '700' },
+        { label: "light", value: '200' },
     ]
 }
