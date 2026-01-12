@@ -55,12 +55,14 @@ export function VideoPlayer() {
     return(
         <MediaPlayer title={current.name} load="visible" src={{src: `${import.meta.env.VITE_MEDIA_SERVER}/${id}/master.m3u8`, type: 'application/x-mpegurl'}} className='relative w-screen h-screen flex justify-center' ref={player} onCanPlay={canPlay} keyTarget='player' crossOrigin>
             <MediaProvider />
-            <Captions className="media-captions absolute bottom-1/12 z-50 p-4 rounded-md select-none break-words opacity-100 transition-[opacity] duration-300 media-captions:opacity-100 media-preview:opacity-0 aria-hidden:hidden"
+            <Captions className="media-captions absolute bottom-0 z-50 p-4 rounded-md select-none break-words opacity-100 transition-[opacity] duration-300 media-captions:opacity-100 media-preview:opacity-0 aria-hidden:hidden"
                 style={{
                     fontSize: styles.fontSize,
                     fontWeight: styles.fontWeight,
                     color: styles.textColor,
-                    backgroundColor: styles.backgroundColor
+                    backgroundColor: styles.backgroundColor,
+                    opacity: styles.backgroundOpacity,
+                    bottom: styles.verticalPosition + '%'
                 }}
             />
             <VideoControls name={current.name} />
