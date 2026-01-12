@@ -13,7 +13,9 @@ export class VideoService {
                     id: true,
                     name: true,
                     thumbnail: true,
-                    videotype: true
+                    videotype: true,
+                    genre_id: true,
+                    createdAt: true
                 }
             })
 
@@ -159,6 +161,17 @@ export class VideoService {
             });
 
             return video;
+        }
+        catch(err){
+            throw new InternalServerErrorException(err)
+        }
+    }
+
+    async getAllGenres() {
+        try {
+            const genres = await this.prisma.genre.findMany()
+
+            return genres;
         }
         catch(err){
             throw new InternalServerErrorException(err)

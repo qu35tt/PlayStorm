@@ -35,4 +35,9 @@ export class VideoController {
   getEpisodeUrl(@Param('id') id: string) {
     return this.videoService.getEpisodeUrl(id);
   }
+
+  @Get('genres/all')
+  getAllGenres() {
+    return this.videoService.getAllGenres();
+  }
 }

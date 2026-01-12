@@ -4,8 +4,14 @@ export type VideoData = {
     id: string
     name: string
     length: number,
-    banner: string
-    description: string
+    banner: string,
+    description: string,
+    genre_id: number
+    createdAt: Date
+}
+
+export type Titles = {
+    name: string
 }
 
 export type Video = {
@@ -16,6 +22,7 @@ export type Video = {
 export type OutletContext = {
     videos: VideoData[];
     searchQuery: string;
+    titles: Titles[];
 }
 
 export type VideoControlsProps = {
