@@ -60,7 +60,6 @@ export function ProfileModal() {
                   <span>{name}</span>
                 </li>
               ))}
-                
                 <div className="w-full h-[5rem] mt-auto">
                     <Separator className="w-3/4"/>
                     <div className="text-center p-4">AppVersion: 1.0</div>

@@ -6,7 +6,6 @@ export interface CaptionStyles {
   textColor: string;
   backgroundColor: string;
   backgroundOpacity: number;
-  borderRadius: number;
   verticalPosition: number;
   fontWeight: string;
 }
@@ -27,8 +26,7 @@ export const useCaptionStore = create<CaptionState>()(
         fontSize: 24,
         textColor: '#FFFFFF',
         backgroundColor: '#000000',
-        backgroundOpacity: 0.6,
-        borderRadius: 8,
+        backgroundOpacity: 100,
         verticalPosition: 10,
         fontWeight: 'font-medium',
       },
@@ -48,9 +46,9 @@ export const useCaptionStore = create<CaptionState>()(
         styles: {
           ...state.styles,
           fontSize: 24,
-          textColor: '#ffffff',
+          textColor: '#FFFFFF',
           backgroundColor: '#000000',
-          backgroundOpacity: 0.6,
+          backgroundOpacity: 100,
           borderRadius: 8,
           verticalPosition: 10,
           fontWeight: 'font-medium',
