@@ -28,11 +28,12 @@ model Video {
   thumbnail String
   banner    String
   rls_year  Int?
-  genre_id  String
+  genre_id  Int
   videotype VideoType
   favorites Favorites[]
   genre     Genre       @relation(fields: [genre_id], references: [id])
   seasons   Season[]    @relation("VideoToSeason")
+  createdAt DateTime @default(now())
 }
 
 model Season { 
@@ -80,7 +81,7 @@ model WatchProgress {
 }
 
 model Genre {
-  id    String  @id @default(uuid())
+  id    Int  @id @default(autoincrement())
   name  String
   video Video[]
 }

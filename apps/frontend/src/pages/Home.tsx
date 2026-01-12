@@ -12,7 +12,9 @@ type VideoData = {
     name: string
     length: number,
     thumbnail: string
-    videotype: 'MOVIE' | 'SERIES'
+    videotype: 'MOVIE' | 'SERIES',
+    genre_id: number
+    createAt: Date
 }
 
 export function Home() {

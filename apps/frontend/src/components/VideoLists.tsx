@@ -8,6 +8,7 @@ import { ChevronRight, ChevronLeft, } from "lucide-react"
 import { useRef } from "react"
 import { StartPartyButton } from "./startPartyButton";
 import type { VideoData, OutletContext } from "@/types/video-data-types"
+import { GENRE_MAP } from "@/configs/genreMap"
 
 export function VideoLists() {
   const { videos, searchQuery } = useOutletContext<OutletContext>();
@@ -25,13 +26,14 @@ export function VideoLists() {
     )
   }
 
-  const chunkArray = (array: VideoData[], size: number) => {
-    return Array.from({ length: Math.ceil(array.length / size) }, (_, index) =>
-      array.slice(index * size, index * size + size)
-    );
-  }
-
-  const videoRows = chunkArray(videos, 8);
+    const videoRows = GENRE_MAP.map(genre => {
+    let rowData: VideoData[] = [];
+    rowData = videos.filter(video => video.genre_id === genre.id);
+    return {
+        title: genre.title,
+        data: rowData
+    };
+    }).filter(row => row.data.length > 0);
 
   function handleScroll(rowIndex: number, direction: number){
     const el = rowViewportsRef.current[rowIndex];
@@ -43,7 +45,6 @@ export function VideoLists() {
   const isSearchActive = searchQuery.length > 0;
 
  if (isSearchActive) {
-    // Renders the new grid view when a search query is active
     return (
         <div className="w-full overflow-y-auto">
             <VideoModal />
@@ -68,10 +69,10 @@ export function VideoLists() {
         <div className="w-full flex-1 min-h-0 p-0 space-y-4 md:space-y-6 overflow-y-auto">
             <VideoModal />
             <Banner />
-            {videoRows.map((rowVideos, rowIdx) => (
-                <div key={rowIdx} className="space-y-1 px-4">
+            {videoRows.map((row, rowIdx) => (
+                    <div key={row.title} className="space-y-1 px-4">
                     <h2 className="text-base md:text-lg font-semibold text-white">
-                        {getRowTitle(rowIdx, rowVideos.length)}
+                        {row.title}
                     </h2>
 
                     <div className="relative">
@@ -89,8 +90,8 @@ export function VideoLists() {
                             viewportRef={(el) => { rowViewportsRef.current[rowIdx] = el; }}
                         >
                             <div className="flex gap-6 px-12 justify-center">
-                                {rowVideos.map((video, vidIdx) => (
-                                    <div key={video.id || vidIdx} className="w-[12rem] sm:w-[18rem] md:w-[24rem] lg:w-[30rem]">
+                                {row.data.map((video) => (
+                                    <div key={video.id} className="w-[12rem] sm:w-[18rem] md:w-[24rem] lg:w-[30rem] shrink-0">
                                         <VideoCard videoData={video} />
                                     </div>
                                 ))}
@@ -112,21 +113,4 @@ export function VideoLists() {
         </div>
     );
   }
-}
-
-// Helper function to generate meaningful row titles
-function getRowTitle(rowIndex: number, itemCount: number): string {
-  const titles = [
-    "Recently Added",
-    "Trending Now", 
-    "Popular Movies",
-    "Recommended for You",
-    "Action & Adventure",
-    "Comedy Collection",
-    "Drama Series",
-    "Sci-Fi & Fantasy"
-  ];
-  
-  // Use predefined titles or fall back to generic ones
-  return titles[rowIndex] || `More Videos (${itemCount} items)`;
 }
