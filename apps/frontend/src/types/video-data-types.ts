@@ -8,6 +8,7 @@ export type VideoData = {
     description: string,
     genre_id: number
     createdAt: Date
+    videotype: VideoType
 }
 
 export type Titles = {

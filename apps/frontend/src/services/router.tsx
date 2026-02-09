@@ -5,7 +5,7 @@ import { Home } from "../pages/Home"
 import { VideoPlayer } from "../pages/VideoPlayer"
 import { VideoLists } from "../components/VideoLists"
 import { PrivateRoute } from "../lib/PrivateRoute"
-import { SocketManager } from "@/components/socketManager";
+import { SocketEventHandler } from "@/components/SocketEventHandler";
 
 export const router = createBrowserRouter([
   {
@@ -16,7 +16,7 @@ export const router = createBrowserRouter([
     path: "/home",
     element: (
       <PrivateRoute>
-        <SocketManager />
+        <SocketEventHandler />
           <Home />
       </PrivateRoute>
     ),
@@ -25,7 +25,7 @@ export const router = createBrowserRouter([
         index: true,
         element: (
         <>
-          <SocketManager />
+          <SocketEventHandler />
           <VideoLists />
         </>
       )},
@@ -35,7 +35,7 @@ export const router = createBrowserRouter([
     path: "/watch/:id", // or just "/watch"
     element: (
       <>
-        <SocketManager />
+        <SocketEventHandler />
         <VideoPlayer />
       </>
     )
