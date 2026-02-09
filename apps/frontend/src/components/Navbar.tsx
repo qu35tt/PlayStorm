@@ -17,6 +17,7 @@ import { useUser } from "@/context/user-context";
 import { useModal } from "@/hooks/use-modal-store";
 import { Separator } from "@/components/ui/separator";
 import type { VideoType, NavbarProps } from '@/types/video-data-types'
+import { queryClient } from "@/lib/query-client";
 
 
 export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) {
@@ -47,6 +48,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
             user.clearId();
             user.clearToken();
             clearUser();
+            queryClient.clear();
                 
             nav("/");
             toast.success("Logged out succesfully!", {duration: 2000})
