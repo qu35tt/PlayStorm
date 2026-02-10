@@ -34,7 +34,7 @@ export interface ServerToClientEvents {
   user_left: (payload?: { userInfo: PartyUser }) => void;
   party_joined: (payload?: {members: PartyUser[]}) => void;
   start_playback: (payload?: { videoId: string }) => void;
-  playback_action: (payload: PlayerAction) => void;
+  sync_playback: (payload: PlayerAction) => void;
   end_playback: () => void;
   kicked: () => void;
 }

@@ -13,10 +13,11 @@ export const SocketContext = createContext<AppSocket>(socket);
 // 2. Create the Provider Component
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     useEffect(() => {
-    const { user, roomId, initializeSocket } = usePartyStore.getState();
+    const { user, roomId } = usePartyStore.getState();
+
 
     if (user && roomId) {
-      initializeSocket();
+      socket.connect();
     }
   }, []);
   

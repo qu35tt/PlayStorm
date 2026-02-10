@@ -24,7 +24,7 @@ export function VideoPlayer() {
     
     const player = useRef<MediaPlayerInstance>(null);
 
-    const { setRemote } = usePartyStore();
+    const { setPlayer } = usePartyStore();
 
     useEffect(() => {
         async function getVideo()
@@ -33,7 +33,7 @@ export function VideoPlayer() {
                 const response = await axios.get(`${import.meta.env.VITE_API_URL}video/stream/${id}`,  { headers: { Authorization: `Bearer ${user.token}` } })
                 setCurrent(response.data);
                 if(player.current) {
-                    setRemote(player.current.remoteControl)
+                    setPlayer(player.current);
                 }
             }
             catch(err){
