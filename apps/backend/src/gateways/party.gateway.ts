@@ -93,7 +93,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handlePlaybackAction(@ConnectedSocket() client: Socket, @MessageBody() action: PlayerAction) {
     let roomId = client.data.roomId;
 
-    client.to(roomId).emit('sync_playback', { action: action })
+    client.to(roomId).emit('sync_playback', action)
   }
 
   @SubscribeMessage('end_playback') 

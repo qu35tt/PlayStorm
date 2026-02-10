@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type {
   PartyUser,
-  PlaybackData,
   PlayerAction,
 } from '../types/socket-types';
-import { socket } from '../lib/SocketInstance'; // Import the singleton socket
-import { MediaRemoteControl } from '@vidstack/react';
+import { socket } from '../lib/SocketInstance';
+import { MediaPlayerInstance } from '@vidstack/react';
+import { useUserStore } from './userStore';
 
 export type PartyStore = {
   isConnected: boolean;
@@ -15,12 +15,14 @@ export type PartyStore = {
   videoId: string | null;
   members: PartyUser[];
   error: string | null;
-  remote: MediaRemoteControl | null;
-  setRemote: (remote: MediaRemoteControl) => void;
+  // remote: MediaRemoteControl | null;
+  // setRemote: (remote: MediaRemoteControl) => void;
+  player: MediaPlayerInstance | null;
   setUser: (user: PartyUser) => void;
   setRoomId: (roomId: string | null) => void;
   setVideoId: (videoId: string | null) => void;
   setMembers: (members: PartyUser[]) => void;
+  setPlayer: (player: MediaPlayerInstance) => void;
   addMember: (user: PartyUser) => void;
   removeMember: (user: PartyUser) => void;
   setIsConnected: (isConnected: boolean) => void;
@@ -50,14 +52,19 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       videoId: null,
       members: [],
       error: null,
-      remote: null,
+      player: null,
       setUser: (user) => {
         set({ user });
       },
 
-      setRemote: (remote) => {
-        set({remote});
-        remote.setTarget(remote.getPlayer());
+      // setRemote: (remote) => {
+      //   set({remote});
+      //   remote.setTarget(remote.getPlayer());
+      // },
+
+      setPlayer: (player: MediaPlayerInstance) => {
+        set({ player });
+        console.log("Player instance set in store: ", player);
       },
 
       setRoomId: (roomId) => set({ roomId }),
@@ -82,6 +89,13 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       setError: (error) => set({ error }),
 
       connect: () => {
+        const token = useUserStore.getState().token;
+        if (token) {
+          socket.io.opts.extraHeaders = {
+            ...socket.io.opts.extraHeaders,
+            authorization: `Bearer ${token}`,
+          };
+        }
         if (!socket.connected) {
           socket.connect();
         }
@@ -145,6 +159,7 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
 
       playback_action: (action: PlayerAction) => {
         socket.emit('playback_action', action)
+        console.log("Emitted playback action: ", action)
       },
 
       end_playback: () => {

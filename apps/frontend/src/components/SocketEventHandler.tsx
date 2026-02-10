@@ -52,10 +52,9 @@ export const SocketEventHandler = () => {
     };
 
     const onPlaybackAction = (data: PlayerAction) => {
-      const remote = usePartyStore.getState().remote;
-      if (!remote) return;
-      
-      const player = remote.getPlayer();
+      const player = usePartyStore.getState().player;
+      console.log("Received playback action: ", data);
+
       if (!player) return;
 
       switch(data.action){
@@ -82,7 +81,7 @@ export const SocketEventHandler = () => {
     socket.on('new_user_joined', onNewUserJoined);
     socket.on('user_left', onUserLeft);
     socket.on('start_playback', onStartPlayback);
-    socket.on('playback_action', onPlaybackAction);
+    socket.on('sync_playback', onPlaybackAction);
     socket.on('end_playback', onEndPlayback);
     socket.on('kicked', onKicked);
 
@@ -94,7 +93,7 @@ export const SocketEventHandler = () => {
       socket.off('new_user_joined', onNewUserJoined);
       socket.off('user_left', onUserLeft);
       socket.off('start_playback', onStartPlayback);
-      socket.off('playback_action', onPlaybackAction);
+      socket.off('sync_playback', onPlaybackAction);
       socket.off('end_playback', onEndPlayback);
       socket.off('kicked', onKicked);
     };
