@@ -2,7 +2,7 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "../ui/button"
 import { Input } from "@/components/ui/input"
 import { useUserStore } from "@/stores/userStore"
-import { useEffect, useState, type ChangeEvent } from "react"
+import { useState, type ChangeEvent } from "react"
 import axios from "axios"
 import { ShieldAlert } from "lucide-react"
 
@@ -17,34 +17,18 @@ import {
 import { useUpdateForm } from "@/hooks/use-update-form";
 import { toast } from "sonner"
 import { useUser } from "@/context/user-context"
+import { queryClient, useProfileData } from "@/lib/query-client"
 
-type UserData = {
-    username:string,
-    email: string,
-}
 
 export function ProfileSettings(){
     const user = useUserStore()
     const user_ = useUser();
-    const [userData, setUserData] = useState<UserData>()
     const [buttonOn, setButtonOn] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
-    useEffect(() => {
-        async function getProfileData(){
-            await axios.get(`${import.meta.env.VITE_API_URL}user/me/${user.userId}`, { headers: { Authorization: `Bearer ${user.token}` } })
-            .then(function(response) {
-                setUserData(response.data);
-            })
-            .catch(function (err){
-                console.error(err)
-            })
-        }
-
-        if(user.userId) getProfileData()
-    }, [user.userId, user.token])
+    const {data: userData} = useProfileData();
 
     const { form, handleSubmit } = useUpdateForm(async (data) => {
         try{
@@ -56,12 +40,13 @@ export function ProfileSettings(){
             }
 
            axios.put(`${import.meta.env.VITE_API_URL}user/update/${user.userId}`, {
-                email: data.email ? data.email : userData?.email,
-                username: data.username ? data.username : userData?.username,
+                email: data.email ? data.email : userData.email,
+                username: data.username ? data.username : userData.username,
                 password: data.password
            }, { headers: { Authorization: `Bearer ${user.token}` } })
            .then(function (response){
                 toast.success("Data Updated Succesfully!")
+                queryClient.invalidateQueries({ queryKey: ["profile-data", user.userId] });
                 user_.setUser(response.data);
                 window.location.reload();
            })

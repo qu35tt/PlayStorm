@@ -1,7 +1,7 @@
 export type VideoModalData = {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   length: number;
   banner: string;
   rls_year: number;
@@ -10,7 +10,13 @@ export type VideoModalData = {
     id: string;
     name: string;
   };
-  seasons: Season[]; // Add seasons array
+  seasons?: Season[];
+  
+  // Optional fields returned when querying an individual episode
+  seriesName?: string;
+  episodeTitle?: string;
+  episodeNumber?: number;
+  seasonNumber?: number;
 };
 
 export type Episode = {

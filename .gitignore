@@ -222,9 +222,9 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /generated/prisma
 
-./apps/media-server/videos/*
-./apps/media-server/videos
-apps/media-server/videos/*
-apps/media-server/videos
+./apps/backend/saved_videos/*
+./apps/backend/saved_videos
+apps/backend/saved_videos/*
+apps/backend/saved_videos
 
 .env

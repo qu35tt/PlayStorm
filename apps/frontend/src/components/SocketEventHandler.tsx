@@ -62,6 +62,10 @@ export const SocketEventHandler = () => {
         case 'PAUSE': player.remoteControl.pause(); break;
         case 'SEEK_FRW': player.remoteControl.seek(player.currentTime + 10); break;
         case 'SEEK_BCK': player.remoteControl.seek(player.currentTime - 10); break;
+        case 'SEEK_TO':
+          if(data.time !== undefined){
+            player.remoteControl.seek(data.time);
+          }
       }
     };
 

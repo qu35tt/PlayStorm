@@ -1,8 +1,5 @@
 import { useModal } from "@/hooks/use-modal-store";
-import { useEffect, useState } from "react";
-import { useUserStore } from "@/stores/userStore";
-import axios from "axios";
-
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,33 +9,13 @@ import {
 import { settingsConfig } from "@/configs/settingsConfig";
 import { Separator } from "@/components/ui/separator";
 
-type profileData = {}
-
 export function ProfileModal() {
-  const user = useUserStore();
-  const { isOpen, onClose, type, videoId } = useModal();
-  const [data, setData] = useState<profileData | null>();
+  const { isOpen, onClose, type } = useModal();
 
   const [activeTab, setActiveTab] = useState<keyof typeof settingsConfig>("profile");
   const ActiveComponent = settingsConfig[activeTab].component;
 
   const isModalOpen = isOpen && type === "profile";
-
-  useEffect(() => {
-    setData(null);
-
-    async function getData() {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}video/data/${videoId}`,
-        { headers: { Authorization: `Bearer ${user.token}` } }
-      );
-      setData(response.data);
-    }
-
-    if (videoId) {
-      getData();
-    }
-  }, [user.userId, user.token]);
 
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>

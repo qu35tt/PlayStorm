@@ -160,6 +160,7 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       playback_action: (action: PlayerAction) => {
         socket.emit('playback_action', action)
         console.log("Emitted playback action: ", action)
+      
       },
 
       end_playback: () => {

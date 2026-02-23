@@ -34,6 +34,8 @@ model Video {
   genre     Genre       @relation(fields: [genre_id], references: [id])
   seasons   Season[]    @relation("VideoToSeason")
   createdAt DateTime @default(now())
+
+  watchProgress WatchProgress[] @relation("Video Progression")
 }
 
 model Season { 
@@ -70,14 +72,15 @@ model Episode {
 model WatchProgress {
   id            String   @id @default(uuid())
   user_id       String
-  user          User @relation(fields: [user_id], references: [id], name: "Users progress")
-
-  episode_id    String
-  episode       Episode @relation(fields: [episode_id], references: [id], name: "Episode Progression")
-
+  video_id      String?
+  episode_id    String?
   type          VideoType
   last_position BigInt
   isFinished    Boolean
+
+  user          User @relation(fields: [user_id], references: [id], name: "Users progress")
+  video         Video? @relation(fields: [video_id], references: [id], name: "Video Progression")
+  episode       Episode? @relation(fields: [episode_id], references: [id], name: "Episode Progression")
 }
 
 model Genre {

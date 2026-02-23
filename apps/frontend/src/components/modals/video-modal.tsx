@@ -23,72 +23,85 @@ import {
 import { Button } from "../ui/button";
 import { Play, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useUserStore } from "@/stores/userStore";
-import axios from "axios";
 import type { VideoModalData } from '@/types/video-modal.types'
+import { useVideoData, setVideoData } from "@/lib/query-client";
 
 export function VideoModal(){
   const nav = useNavigate();
-  const user = useUserStore();
-
   const { start_playback } = usePartyStore();
   
   const { isOpen, onClose, type, videoId } = useModal();
+  const isModalOpen = isOpen && type === "video";
 
-  const [data, setData] = useState<VideoModalData | null>(null);
+  const { data } = useVideoData<VideoModalData>(isModalOpen ? videoId || undefined : undefined);
   const [selectedSeasonIndex, setSelectedSeasonIndex] = useState<number>(0);
 
   const party = usePartyStore()
 
-  const isModalOpen = isOpen && type === "video";
-
   useEffect(() => {
     if (!isModalOpen) {
-      setData(null);
       setSelectedSeasonIndex(0);
     }
   }, [isModalOpen]);
 
-  useEffect(() => {
-    if (!isModalOpen || !videoId) return;
-
-    async function getData() {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}video/data/${videoId}`,
-          { headers: { Authorization: `Bearer ${user.token}` } }
-        );
-        setData(response.data);
-      } catch (err) {
-        console.error("[VideoModal] Error fetching video data:", err);
-      }
-    }
-    getData();
-  }, [isModalOpen, videoId, user.token]);
-
   function handleClick(){
     if (!data) return;
 
-    if(data.videotype === "SERIES" && data.seasons.length > 0){
-      const firstEpId = data.seasons[0].episodes[0].id;
-      nav(`/watch/${firstEpId}`);
+    if(data.videotype === "SERIES" && data.seasons && data.seasons.length > 0){
+      const season = data.seasons[0];
+      const episode = season.episodes[0];
+      
+      // Pre-seed episode data for the player
+      setVideoData(episode.id, {
+        ...episode,
+        name: `${data.name} - ${episode.title}`,
+        banner: episode.thumbnail || data.banner,
+        videotype: 'SERIES',
+        genre: data.genre,
+        rls_year: data.rls_year,
+        seriesName: data.name,
+        episodeTitle: episode.title,
+        episodeNumber: episode.number,
+        seasonNumber: season.number
+      });
+
+      nav(`/watch/${episode.id}`);
+      if(party.roomId) start_playback(episode.id);
     }
     else {
-      nav(`/watch/${videoId}`);
-    }
-
-    if(party.roomId){
-      if (videoId) {
-        start_playback(videoId);
-      }
+      nav(`/watch/${videoId}/`);
+      if(party.roomId && videoId) start_playback(videoId);
     }
 
     onClose();
   }
 
   function handleEpisodeClick(episodeId: string) {
+    if (!data || !data.seasons) return;
+    
+    // Find the episode info from our current modal data to seed the cache
+    const season = data.seasons[selectedSeasonIndex];
+    if (!season) return;
+
+    const episode = season.episodes.find(e => e.id === episodeId);
+    
+    if (episode) {
+      setVideoData(episodeId, {
+        ...episode,
+        name: `${data.name} - ${episode.title}`,
+        banner: episode.thumbnail || data.banner,
+        videotype: 'SERIES',
+        genre: data.genre,
+        rls_year: data.rls_year,
+        seriesName: data.name,
+        episodeTitle: episode.title,
+        episodeNumber: episode.number,
+        seasonNumber: season.number
+      });
+    }
+
     nav(`/watch/${episodeId}`);
-    start_playback(episodeId);
+    if(party.roomId) start_playback(episodeId);
     onClose();
   }
 
@@ -98,11 +111,9 @@ export function VideoModal(){
 
   const contentHeightClass = isSeries? "h-[80vh]" : ""
 
-  const isLoaded = !data;
-
   return(
     <>
-      {!isLoaded && (
+      {data && (
         <Dialog open={isModalOpen} onOpenChange={onClose}>
         <DialogContent className="w-3/4 bg-[#0F2340] text-white p-0 m-0 border-0">
           <div className={cn(contentHeightClass ,"overflow-y-auto")}>
@@ -114,12 +125,12 @@ export function VideoModal(){
                 </div>
               </div>
             </DialogHeader>
-            <DialogDescription className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8 px-4 py-6">
+            <DialogDescription className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8 px-4 py-6 text-white">
               {/* Left Column: Description */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-gray-400">
                   <span className="text-green-500 font-bold">98% Match</span>
-                  <span>2024</span>
+                  <span>{data.rls_year || 2024}</span>
                   <span className="border border-gray-500 px-1 text-xs">HD</span>
                   {data?.videotype === "MOVIE" && (
                     <span className="flex flex-row gap-2 items-center"><Clock className="w-3 h-3"/> {formatTime(data.length)}</span>
@@ -135,7 +146,7 @@ export function VideoModal(){
                 <p><span className="font-semibold">Type: </span> {data?.videotype}</p>
               </div>
             </DialogDescription>
-            {data?.videotype === "SERIES" && data.seasons.length > 0 && (
+            {data?.videotype === "SERIES" && data.seasons && data.seasons.length > 0 && (
               <div className="px-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-bold mb-4">Episodes</h3>
@@ -210,5 +221,3 @@ export function VideoModal(){
     </>
   )
 }
-
-//data?.videotype === "SERIES" && data.seasons.length > 0

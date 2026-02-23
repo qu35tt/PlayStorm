@@ -16,10 +16,4 @@ export class AuthController {
   login(@Body() dto: LoginDto){
     return this.authService.login(dto);
   }
-
-  @UseGuards(AuthGuard)
-  @Post('logout')
-  logout(@Body() dto: LogoutDto){
-    return this.authService.logout(dto);
-  }
 }

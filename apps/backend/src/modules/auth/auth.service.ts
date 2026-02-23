@@ -59,13 +59,4 @@ export class AuthService {
             
         }
     }
-
-    async logout(dto: LogoutDto){
-        try{
-            return "Logged out succesfully!"
-        }
-        catch(err) {
-            throw new InternalServerErrorException()
-        }
-    }
 }
