@@ -19,21 +19,15 @@ export class VideoController {
   }
 
   // @UseGuards(AuthGuard)
-  @Get('stream/:id')
-  getVideo(@Param('id') id: string){
-    return this.videoService.getVideo(id)
+  @Get('stream/:id/:filename')
+  getVideo(@Param('id') id: string, @Param('filename') filename: string){
+    return this.videoService.streamVideo(id, filename);
   }
 
   @UseGuards(AuthGuard)
   @Get('data/:id')
   getVideoData(@Param('id') id:string){
     return this.videoService.getVideoData(id);
-  }
-
-  @UseGuards(AuthGuard)
-  @Get('episode/:id')
-  getEpisodeUrl(@Param('id') id: string) {
-    return this.videoService.getEpisodeUrl(id);
   }
 
   @Get('genres/all')

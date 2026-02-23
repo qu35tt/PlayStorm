@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, Req } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserDataDto } from './dto';
 import { createClient } from "@supabase/supabase-js"
@@ -20,7 +20,6 @@ export class UserService {
                     id
                 },
                 select: {
-                    id: true,
                     username: true,
                     email: true,
                     avatarUrl: true

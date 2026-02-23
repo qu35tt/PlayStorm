@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
-import { socket } from '../lib/SocketInstance'; // Your singleton instance
+import { socket } from '../lib/SocketInstance';
 import type { ServerToClientEvents, ClientToServerEvents } from '../types/socket-types';
 import { usePartyStore } from '@/stores/partyStore';
 

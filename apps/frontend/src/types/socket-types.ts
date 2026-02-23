@@ -15,7 +15,8 @@ export type PlaybackData = {
 }
 
 export type PlayerAction = {
- action: | 'PLAY' | 'PAUSE' | 'SEEK_FRW' | 'SEEK_BCK';
+ action: | 'PLAY' | 'PAUSE' | 'SEEK_FRW' | 'SEEK_BCK' | 'SEEK_TO',
+ time?: number;
 }
 
 export interface ClientToServerEvents {

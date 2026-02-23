@@ -34,33 +34,15 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
     const itemClass = (t: VideoType) => `${base} ${selectedType === t ? activeClass : ""}`;
 
     async function handleLogout(){
-        try{
-        await axios.post(
-            `${import.meta.env.VITE_API_URL}auth/logout`,
-            { userId: user.userId },
-            {
-                headers: {
-                    Authorization: `Bearer ${user.token}`,
-                }
-            }
-        )
-        .then(function () {
-            user.clearId();
-            user.clearToken();
-            clearUser();
-            queryClient.clear();
+        
+        user.clearId();
+        user.clearToken();
+        clearUser();
+        queryClient.clear();
                 
-            nav("/");
-            toast.success("Logged out succesfully!", {duration: 2000})
-            socket.disconnect();
-        })
-        .catch(function (err){
-            console.error(err)
-        })
-        } 
-        catch(err){
-            console.log(err)
-        }
+        nav("/");
+        toast.success("Logged out succesfully!", {duration: 2000})
+        socket.disconnect();
     }
 
     async function getUserData() {
