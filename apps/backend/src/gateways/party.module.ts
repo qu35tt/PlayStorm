@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { EventsGateway } from './party.gateway';
-import { RoomManagmentService } from './room-managment.service';
+import { RoomManagementService } from './room-management.service';
 
 @Module({
-    providers: [EventsGateway, RoomManagmentService],
+    providers: [EventsGateway, RoomManagementService],
     imports: []
 })
 export class PartyModule {}
