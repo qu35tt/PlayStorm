@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import Ffmpeg, * as ffmpeg from 'fluent-ffmpeg';
 import { createReadStream } from 'fs';
+import { access, constants } from 'fs/promises';
 
 // Set ffprobe path
 const ffprobePath = require('ffprobe-static').path;
@@ -52,7 +53,9 @@ export class VideoService {
             const baseDir = path.join(process.cwd(), 'saved_videos', id);
 
             // Check if directory exists
-            if (!fs.existsSync(baseDir)) {
+            try {
+                await access(baseDir, constants.F_OK);
+            } catch {
                 throw new NotFoundException(`Stream directory for ID ${id} not found.`);
             }
 
@@ -60,18 +63,28 @@ export class VideoService {
             let actualFilename = filename;
             if (filename === 'index.m3u8') {
                 // Check which one exists: master.m3u8 or index.m3u8
-                actualFilename = fs.existsSync(path.join(baseDir, 'master.m3u8'))
-                    ? 'master.m3u8'
-                    : 'index.m3u8';
+                try {
+                    await access(path.join(baseDir, 'master.m3u8'), constants.F_OK);
+                    actualFilename = 'master.m3u8';
+                } catch {
+                    actualFilename = 'index.m3u8';
+                }
             }
 
             const requestedFile = path.join(baseDir, actualFilename);
 
-            if (!fs.existsSync(requestedFile)) {
+            try {
+                await access(requestedFile, constants.F_OK);
+            } catch {
                 throw new NotFoundException(`File ${filename} not found in stream folder.`);
             }
 
-            const fileStream = fs.createReadStream(requestedFile);
+            const fileStream = createReadStream(requestedFile);
+            
+            fileStream.on('error', (error) => {
+                console.error(`Stream error for file ${requestedFile}:`, error);
+            });
+
             const contentType = filename.endsWith('.m3u8') ? 'application/vnd.apple.mpegurl' : 'video/mp2t';
 
             return new StreamableFile(fileStream, { type: contentType });

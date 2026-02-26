@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useUser } from "@/context/user-context";
 import { useUserStore } from "@/stores/userStore";
 import { useEffect } from 'react';
+import { useSocket } from "@/context/socket-context";
 
 export function PartyModal() {
   const { isOpen, onClose, onOpen, type } = useModal();
@@ -15,6 +16,7 @@ export function PartyModal() {
   const { userId } = useUserStore();
 
   const isModalOpen = isOpen && type === 'party';
+  const socket = useSocket();
 
   const {
       roomId,
@@ -71,6 +73,38 @@ export function PartyModal() {
       console.log("Room ID changed:", roomId);
       socketConnection();
     }, []);
+
+    useEffect(() => {
+      if (!socket) return;
+
+      const handlePartyJoined = (data: { members: any[] }) => {
+        usePartyStore.setState({ members: data.members });
+      };
+
+      const handleNewUserJoined = (data: { userInfo: any }) => {
+        const { members } = usePartyStore.getState();
+        if (!members.some((m) => m.id === data.userInfo.id)) {
+          usePartyStore.setState({ members: [...members, data.userInfo] });
+          toast.success(`${data.userInfo.username} joined the party!`);
+        }
+      };
+
+      const handleUserLeft = (data: { userInfo: any }) => {
+        const { members } = usePartyStore.getState();
+        usePartyStore.setState({ members: members.filter((m) => m.id !== data.userInfo.id) });
+        toast.info(`${data.userInfo.username} left the party.`);
+      };
+
+      socket.on('party_joined', handlePartyJoined);
+      socket.on('new_user_joined', handleNewUserJoined);
+      socket.on('user_left', handleUserLeft);
+
+      return () => {
+        socket.off('party_joined', handlePartyJoined);
+        socket.off('new_user_joined', handleNewUserJoined);
+        socket.off('user_left', handleUserLeft);
+      };
+    }, [socket]);
 
   if(roomId != null) {
     return (

@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client';
 import { socket } from '../lib/SocketInstance';
 import type { ServerToClientEvents, ClientToServerEvents } from '../types/socket-types';
 import { usePartyStore } from '@/stores/partyStore';
+import { useUserStore } from '@/stores/userStore';
 
 // Define the typed socket
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -14,10 +15,37 @@ export const SocketContext = createContext<AppSocket>(socket);
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     useEffect(() => {
     const { user, roomId } = usePartyStore.getState();
-
+    const token = useUserStore.getState().token;
 
     if (user && roomId) {
-      socket.connect();
+      if (!socket.connected) {
+        if (token) {
+          socket.io.opts.extraHeaders = {
+            Authorization: `Bearer ${token}`,
+          };
+        }
+        socket.connect();
+      }
+
+      const onConnect = () => {
+        socket.emit('join_party', { roomId, user });
+      };
+
+      const onRoomNotFound = () => {
+        usePartyStore.setState({ roomId: null });
+      };
+
+      socket.on('connect', onConnect);
+      socket.on('room_not_found', onRoomNotFound);
+
+      if (socket.connected) {
+        onConnect();
+      }
+
+      return () => {
+        socket.off('connect', onConnect);
+        socket.off('room_not_found', onRoomNotFound);
+      };
     }
   }, []);
   
