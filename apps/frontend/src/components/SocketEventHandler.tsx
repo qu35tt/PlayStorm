@@ -20,15 +20,19 @@ export const SocketEventHandler = () => {
       usePartyStore.getState().setError(`Disconnected: ${reason}`);
     };
 
-    const onPartyCreated = (payload: { roomId: string }) => {
+    const onPartyCreated = (payload: { roomId: string; hostId: string }) => {
       usePartyStore.getState().setRoomId(payload.roomId);
+      usePartyStore.getState().setHostId(payload.hostId);
       const user = usePartyStore.getState().user;
       if (user) usePartyStore.getState().setMembers([user]);
     };
 
-    const onPartyJoined = (payload?: { members: PartyUser[] }) => {
+    const onPartyJoined = (payload?: { members: PartyUser[]; hostId: string }) => {
       if (payload?.members) {
         usePartyStore.getState().setMembers(payload.members);
+      }
+      if (payload?.hostId) {
+        usePartyStore.getState().setHostId(payload.hostId);
       }
     };
 
@@ -41,6 +45,12 @@ export const SocketEventHandler = () => {
     const onUserLeft = (payload?: { userInfo: PartyUser }) => {
       if (payload?.userInfo) {
         usePartyStore.getState().removeMember(payload.userInfo);
+      }
+    };
+
+    const onNewHost = (payload: { hostId: string }) => {
+      if (payload.hostId) {
+        usePartyStore.getState().setHostId(payload.hostId);
       }
     };
 
@@ -80,26 +90,28 @@ export const SocketEventHandler = () => {
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('party_created', onPartyCreated);
-    socket.on('party_joined', onPartyJoined);
-    socket.on('new_user_joined', onNewUserJoined);
-    socket.on('user_left', onUserLeft);
-    socket.on('start_playback', onStartPlayback);
-    socket.on('sync_playback', onPlaybackAction);
-    socket.on('end_playback', onEndPlayback);
+    socket.on('partyCreated', onPartyCreated);
+    socket.on('partyJoined', onPartyJoined);
+    socket.on('newUserJoined', onNewUserJoined);
+    socket.on('userLeft', onUserLeft);
+    socket.on('startPlayback', onStartPlayback);
+    socket.on('syncPlayback', onPlaybackAction);
+    socket.on('endPlayback', onEndPlayback);
     socket.on('kicked', onKicked);
+    socket.on('newHost', onNewHost);
 
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
-      socket.off('party_created', onPartyCreated);
-      socket.off('party_joined', onPartyJoined);
-      socket.off('new_user_joined', onNewUserJoined);
-      socket.off('user_left', onUserLeft);
-      socket.off('start_playback', onStartPlayback);
-      socket.off('sync_playback', onPlaybackAction);
-      socket.off('end_playback', onEndPlayback);
+      socket.off('partyCreated', onPartyCreated);
+      socket.off('partyJoined', onPartyJoined);
+      socket.off('newUserJoined', onNewUserJoined);
+      socket.off('userLeft', onUserLeft);
+      socket.off('startPlayback', onStartPlayback);
+      socket.off('syncPlayback', onPlaybackAction);
+      socket.off('endPlayback', onEndPlayback);
       socket.off('kicked', onKicked);
+      socket.off('newHost', onNewHost);
     };
   }, [socket]);
 

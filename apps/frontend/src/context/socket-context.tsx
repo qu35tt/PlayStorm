@@ -28,7 +28,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
 
       const onConnect = () => {
-        socket.emit('join_party', { roomId, user });
+        socket.emit('joinParty', { ...user, roomId } as any);
       };
 
       const onRoomNotFound = () => {
@@ -36,7 +36,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       };
 
       socket.on('connect', onConnect);
-      socket.on('room_not_found', onRoomNotFound);
+      socket.on('roomNotFound', onRoomNotFound);
 
       if (socket.connected) {
         onConnect();
@@ -44,7 +44,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       return () => {
         socket.off('connect', onConnect);
-        socket.off('room_not_found', onRoomNotFound);
+        socket.off('roomNotFound', onRoomNotFound);
       };
     }
   }, []);

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 type User = {
-    userId: string | null;
+    id: string | null;
     token: string | null;
     setId: (id: string) => void;
     setToken: (token: string) => void;
@@ -14,7 +14,7 @@ const storedId = localStorage.getItem('id');
 const validToken = true;
 
 export const useUserStore = create<User>((set) => ({
-    userId: validToken ? storedId : null,
+    id: validToken ? storedId : null,
     token: validToken ? storedToken : null,
     setToken: (token) => {
         localStorage.setItem('access_token', token);
@@ -22,7 +22,7 @@ export const useUserStore = create<User>((set) => ({
     },
     setId: (id) => {
         localStorage.setItem('id', id);
-        set({ userId: id });
+        set({ id });
     },
     clearToken: () => {
         localStorage.removeItem('access_token');
@@ -30,6 +30,6 @@ export const useUserStore = create<User>((set) => ({
     },
     clearId: () => {
         localStorage.removeItem('id');
-        set({ userId: null });
+        set({ id: null });
     }
 }));

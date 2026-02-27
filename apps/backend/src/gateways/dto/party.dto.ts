@@ -40,6 +40,8 @@ export class DisconnectResult {
     user: PartyUser
 
     updatedUserList: PartyUser[]
+
+    newHostId?: string
 }
 
 export class PlaybackData {
@@ -49,7 +51,7 @@ export class PlaybackData {
 
     @IsNumber()
     @IsNotEmpty()
-    current_time: number
+    currentTime: number
 }
 
 export enum PlayerAction {

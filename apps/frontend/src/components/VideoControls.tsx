@@ -39,7 +39,9 @@ export function VideoControls({ name }: VideoControlsProps) {
     const duration = useMediaState('duration');
     const [showVolume, setShowVolume] = useState(false);
     const hideTimerRef = useRef<number | null>(null);
-    const { playback_action, end_playback } = usePartyStore();
+    const { playbackAction, endPlayback, user, hostId } = usePartyStore();
+
+    const isHost = user?.id === hostId;
 
     const nav = useNavigate();
 
@@ -60,35 +62,37 @@ export function VideoControls({ name }: VideoControlsProps) {
     }
 
     const handlePlay = () => {
+        if (!isHost) return;
         player?.remoteControl.play();
-        playback_action({action: 'PLAY'});
+        playbackAction({action: 'PLAY'});
     };
 
     const handlePause = () => {
+        if (!isHost) return;
         player?.remoteControl.pause();
-        playback_action({action: 'PAUSE'});
+        playbackAction({action: 'PAUSE'});
     };
 
     const handleSeekFrw = () => {
-        if (!player) return;
+        if (!player || !isHost) return;
         const newTime = Math.min(currentTime + 10, duration);
         player.currentTime = newTime;
-        playback_action({ action: 'SEEK_TO', time: newTime });
+        playbackAction({ action: 'SEEK_TO', time: newTime });
     };
 
     const handleSeekBck = () => {
-        if (!player) return;
+        if (!player || !isHost) return;
         const newTime = Math.max(currentTime - 10, 0);
         player.currentTime = newTime;
-        playback_action({ action: 'SEEK_TO', time: newTime });
+        playbackAction({ action: 'SEEK_TO', time: newTime });
     }
 
     const handleSeekCommit = (e: any) => {
-        if (!player) return;
+        if (!player || !isHost) return;
         const newTime = e.detail;
         player.currentTime = newTime;
 
-        playback_action({
+        playbackAction({
             action: 'SEEK_TO', 
             time: newTime
         });
@@ -97,7 +101,9 @@ export function VideoControls({ name }: VideoControlsProps) {
     }
 
     const handleReturn = () => {
-        end_playback();
+        if (isHost) {
+            endPlayback();
+        }
         nav('/home')
     }
     
@@ -123,7 +129,7 @@ export function VideoControls({ name }: VideoControlsProps) {
 
                 <Controls.Group className="absolute bottom-0 left-0 pointer-events-auto w-full flex flex-col px-6 pb-6 pt-12">
                     {/* Time Slider above buttons */}
-                    <div className="w-full mb-4">
+                    <div className={`w-full mb-4 ${!isHost ? 'pointer-events-none opacity-80' : ''}`}>
                         <TimeSlider.Root 
                             className="group relative flex h-10 w-full items-center cursor-pointer touch-none select-none outline-none" 
                             onDragEnd={handleSeekCommit}

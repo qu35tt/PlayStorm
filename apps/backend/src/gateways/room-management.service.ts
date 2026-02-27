@@ -46,6 +46,7 @@ export class RoomManagementService {
         }
 
         const roomUsers = room.users;
+        const isHost = room.hostId === user.id;
 
         // Only remove if the specific user reference exists (handles re-joins gracefully)
         const currentUser = roomUsers.get(user.id);
@@ -58,6 +59,13 @@ export class RoomManagementService {
             return null;
         }
 
+        let newHostId: string | undefined = undefined;
+        if (isHost && roomUsers.size > 0) {
+            // Assign next available user as host
+            newHostId = Array.from(roomUsers.keys())[0];
+            room.hostId = newHostId;
+        }
+
         if(roomUsers.size === 0) {
             this.rooms.delete(roomId);
         }
@@ -67,7 +75,8 @@ export class RoomManagementService {
         return {
             roomId,
             user,
-            updatedUserList: Array.from(roomUsers.values())
+            updatedUserList: Array.from(roomUsers.values()),
+            newHostId
         }
     }
 
