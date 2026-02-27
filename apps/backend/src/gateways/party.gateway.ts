@@ -39,6 +39,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       this.jwtService.verify(token);
+      client.data.token = token; // Store token for periodic re-validation
       console.log(`Client connected: ${client.id}`);
     } catch (error) {
       console.log(`Client disconnected (Unauthorized): ${client.id}`);
@@ -46,20 +47,36 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  private validateToken(client: Socket) {
+    try {
+      const token = client.data.token;
+      if (!token) throw new Error();
+      this.jwtService.verify(token);
+    } catch (error) {
+      client.disconnect();
+      throw new Error('Unauthorized');
+    }
+  }
+
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
     
-    this.roomService.removeUserBySocketId(client.id);
+    const result = this.roomService.removeUserBySocketId(client.id);
+    if (!result) return;
 
-    let userInfo = client.data.user;
-    let roomId = client.data.roomId;
+    const { roomId, user: userInfo, newHostId } = result;
 
-    client.to(roomId).emit('user_left', { userInfo })
+    client.to(roomId).emit('userLeft', { userInfo });
+    
+    if (newHostId) {
+      this.server.to(roomId).emit('newHost', { hostId: newHostId });
+    }
   }
 
   
-  @SubscribeMessage('create_party')
+  @SubscribeMessage('createParty')
   async handlePartyCreation(@ConnectedSocket() client: Socket, @MessageBody() user: PartyUser) {
+    this.validateToken(client);
     const roomId = uuidv4();
 
     client.data.user = user;
@@ -69,15 +86,16 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.roomService.addUserToRoom(roomId, user, client.id);
 
-    client.emit('party_created', { roomId })
+    client.emit('partyCreated', { roomId, hostId: user.id });
   }
 
-  @SubscribeMessage('join_party')
+  @SubscribeMessage('joinParty')
   async handlePartyJoin(@ConnectedSocket() client: Socket, @MessageBody() data: JoinParty) {
+    this.validateToken(client);
     const { roomId, ...userInfo } = data;
 
     if (!this.roomService.doesRoomExist(roomId)) {
-      client.emit('room_not_found');
+      client.emit('roomNotFound');
       return;
     }
 
@@ -89,57 +107,51 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.roomService.addUserToRoom(roomId, userInfo, client.id);
 
     const allMembersInRoom = this.roomService.getUsersInRoom(roomId); 
+    const hostId = this.roomService.getRoomHost(roomId);
 
-    client.emit('party_joined', { members: allMembersInRoom });
+    client.emit('partyJoined', { members: allMembersInRoom, hostId });
 
-    client.to(roomId).emit('new_user_joined', { userInfo })
+    client.to(roomId).emit('newUserJoined', { userInfo })
   }
 
-  @SubscribeMessage('leave_party')
+  @SubscribeMessage('leaveParty')
   async handlePartyLeave(@ConnectedSocket() client: Socket) {
-    this.roomService.removeUserBySocketId(client.id);
+    this.validateToken(client);
+    const result = this.roomService.removeUserBySocketId(client.id);
+    if (!result) return;
+
+    const { roomId, user: userInfo, newHostId } = result;
     
-    let userInfo = client.data.user;
-    let roomId = client.data.roomId;
+    client.to(roomId).emit('userLeft', { userInfo })
     
-    client.to(roomId).emit('user_left', { userInfo })
+    if (newHostId) {
+      this.server.to(roomId).emit('newHost', { hostId: newHostId });
+    }
+
     client.leave(roomId);
   }
 
-  @SubscribeMessage('start_playback')
+  @SubscribeMessage('startPlayback')
   async handleStartPlayback(@ConnectedSocket() client: Socket, @MessageBody() data: PlaybackData) {
+    this.validateToken(client);
     let roomId = client.data.roomId;
-    
-    if (this.roomService.getRoomHost(roomId) !== client.data.user.id) return;
 
-    client.to(roomId).emit('start_playback', {videoId: data.videoId, currentTime: data.currentTime})
+    client.to(roomId).emit('startPlayback', {videoId: data.videoId, currentTime: data.currentTime})
   }
 
-  @SubscribeMessage('playback_action')
+  @SubscribeMessage('playbackAction')
   async handlePlaybackAction(@ConnectedSocket() client: Socket, @MessageBody() action: PlayerAction) {
+    this.validateToken(client);
     let roomId = client.data.roomId;
 
-    if (this.roomService.getRoomHost(roomId) !== client.data.user.id) return;
-
-    client.to(roomId).emit('sync_playback', action)
+    client.to(roomId).emit('syncPlayback', action)
   }
 
-  @SubscribeMessage('end_playback') 
+  @SubscribeMessage('endPlayback') 
   async handleEndPlayback(@ConnectedSocket() client: Socket) {
+    this.validateToken(client);
     let roomId = client.data.roomId;
 
-    if (this.roomService.getRoomHost(roomId) !== client.data.user.id) return;
-
-    client.to(roomId).emit('end_playback');
+    client.to(roomId).emit('endPlayback');
   }
-
-  // @SubscribeMessage('kick_user')
-  // async handleKickUser(@ConnectedSocket() client: Socket, @MessageBody() userId: string ){
-  //   let roomId = client.data.roomId;
-  //   let kickedUserSocketId = await this.roomService.findSocketIdByUserId(userId);
-  //   console.log(kickedUserSocketId);
-  //   if(!kickedUserSocketId) return;
-
-  //   this.server.to(kickedUserSocketId).emit('kicked');
-  // }
 }

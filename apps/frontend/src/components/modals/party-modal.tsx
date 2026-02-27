@@ -9,11 +9,12 @@ import { useUser } from "@/context/user-context";
 import { useUserStore } from "@/stores/userStore";
 import { useEffect } from 'react';
 import { useSocket } from "@/context/socket-context";
+import type { PartyUser } from '@/types/socket-types';
 
 export function PartyModal() {
   const { isOpen, onClose, onOpen, type } = useModal();
   const { userCredentials } = useUser();
-  const { userId } = useUserStore();
+  const { id } = useUserStore();
 
   const isModalOpen = isOpen && type === 'party';
   const socket = useSocket();
@@ -29,14 +30,14 @@ export function PartyModal() {
     } = usePartyStore();
 
     async function socketConnection() {
-      if(!userCredentials || !userId) {
+      if(!userCredentials || !id) {
         console.warn("User is not logged in");
         return;
       }
 
       if(!currentUser) {
-        console.log("user credentials: ", {...userCredentials, id: userId})
-        setUser({...userCredentials, id: userId})
+        console.log("user credentials: ", {...userCredentials, id: id})
+        setUser({...userCredentials, id: id})
       }
 
       connect();
@@ -77,11 +78,13 @@ export function PartyModal() {
     useEffect(() => {
       if (!socket) return;
 
-      const handlePartyJoined = (data: { members: any[] }) => {
-        usePartyStore.setState({ members: data.members });
+      const handlePartyJoined = (payload?: { members: PartyUser[]; hostId: string }) => {
+        if (payload?.members) {
+          usePartyStore.setState({ members: payload.members });
+        }
       };
 
-      const handleNewUserJoined = (data: { userInfo: any }) => {
+      const handleNewUserJoined = (data: { userInfo: PartyUser }) => {
         const { members } = usePartyStore.getState();
         if (!members.some((m) => m.id === data.userInfo.id)) {
           usePartyStore.setState({ members: [...members, data.userInfo] });
@@ -89,20 +92,21 @@ export function PartyModal() {
         }
       };
 
-      const handleUserLeft = (data: { userInfo: any }) => {
+      const handleUserLeft = (payload?: { userInfo: PartyUser }) => {
+        if (!payload?.userInfo) return;
         const { members } = usePartyStore.getState();
-        usePartyStore.setState({ members: members.filter((m) => m.id !== data.userInfo.id) });
-        toast.info(`${data.userInfo.username} left the party.`);
+        usePartyStore.setState({ members: members.filter((m) => m.id !== payload.userInfo.id) });
+        toast.info(`${payload.userInfo.username} left the party.`);
       };
 
-      socket.on('party_joined', handlePartyJoined);
-      socket.on('new_user_joined', handleNewUserJoined);
-      socket.on('user_left', handleUserLeft);
+      socket.on('partyJoined', handlePartyJoined);
+      socket.on('newUserJoined', handleNewUserJoined);
+      socket.on('userLeft', handleUserLeft);
 
       return () => {
-        socket.off('party_joined', handlePartyJoined);
-        socket.off('new_user_joined', handleNewUserJoined);
-        socket.off('user_left', handleUserLeft);
+        socket.off('partyJoined', handlePartyJoined);
+        socket.off('newUserJoined', handleNewUserJoined);
+        socket.off('userLeft', handleUserLeft);
       };
     }, [socket]);
 

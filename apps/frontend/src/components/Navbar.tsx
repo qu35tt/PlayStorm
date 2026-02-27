@@ -47,7 +47,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
 
     async function getUserData() {
         try{
-            await axios.get(`${import.meta.env.VITE_API_URL}user/me/${user.userId}`,
+            await axios.get(`${import.meta.env.VITE_API_URL}user/me/${user.id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${user.token}`,
@@ -69,7 +69,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
 
     useEffect(() => {
         if(!userCredentials) { getUserData() }
-    }, [user.userId])
+    }, [user.id])
 
     function handleClick() {
         onOpen("profile", "");

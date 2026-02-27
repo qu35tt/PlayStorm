@@ -3,13 +3,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { SaveProgressDto } from './dto/save-progress.dto';
 import * as fs from 'fs';
 import * as path from 'path';
-import Ffmpeg, * as ffmpeg from 'fluent-ffmpeg';
 import { createReadStream } from 'fs';
 import { access, constants } from 'fs/promises';
-
-// Set ffprobe path
-const ffprobePath = require('ffprobe-static').path;
-Ffmpeg.setFfprobePath(ffprobePath);
 
 @Injectable()
 export class VideoService {

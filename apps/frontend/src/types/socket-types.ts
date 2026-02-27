@@ -1,17 +1,20 @@
 // This type must match the User type in your UserContext
 export type PartyUser = {
-  id: string | null;
+  id: string;
   username: string;
   avatarUrl: string;
 };
 
-export type JoinParty = PartyUser & {
+export type JoinParty = {
+  id: string;
+  username: string;
+  avatarUrl: string;
   roomId: string;
 };
 
 export type PlaybackData = {
     videoId: string
-    current_time: number
+    currentTime: number
 }
 
 export type PlayerAction = {
@@ -20,22 +23,24 @@ export type PlayerAction = {
 }
 
 export interface ClientToServerEvents {
-  create_party: (user: PartyUser) => void;
-  join_party: (data: JoinParty) => void;
-  leave_party: (roomId: string) => void;
-  start_playback: (data: PlaybackData) => void;
-  playback_action: (action: PlayerAction) => void;
-  kick_user: (usereId: string) => void;
-  end_playback: (roomId: string) => void;
+  createParty: (user: PartyUser) => void;
+  joinParty: (data: JoinParty) => void;
+  leaveParty: (roomId: string) => void;
+  startPlayback: (data: PlaybackData) => void;
+  playbackAction: (action: PlayerAction) => void;
+  kickUser: (usereId: string) => void;
+  endPlayback: (roomId: string) => void;
 }
 
 export interface ServerToClientEvents {
-  party_created: (payload: { roomId: string }) => void;
-  new_user_joined: (payload: { userInfo: PartyUser }) => void;
-  user_left: (payload?: { userInfo: PartyUser }) => void;
-  party_joined: (payload?: {members: PartyUser[]}) => void;
-  start_playback: (payload?: { videoId: string }) => void;
-  sync_playback: (payload: PlayerAction) => void;
-  end_playback: () => void;
+  partyCreated: (payload: { roomId: string; hostId: string }) => void;
+  newUserJoined: (payload: { userInfo: PartyUser }) => void;
+  userLeft: (payload?: { userInfo: PartyUser }) => void;
+  partyJoined: (payload?: { members: PartyUser[]; hostId: string }) => void;
+  startPlayback: (payload?: { videoId: string }) => void;
+  syncPlayback: (payload: PlayerAction) => void;
+  endPlayback: () => void;
+  roomNotFound: () => void;
   kicked: () => void;
+  newHost: (payload: { hostId: string }) => void;
 }

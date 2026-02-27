@@ -28,7 +28,7 @@ import { useVideoData, setVideoData } from "@/lib/query-client";
 
 export function VideoModal(){
   const nav = useNavigate();
-  const { start_playback } = usePartyStore();
+  const { startPlayback } = usePartyStore();
   
   const { isOpen, onClose, type, videoId } = useModal();
   const isModalOpen = isOpen && type === "video";
@@ -66,11 +66,11 @@ export function VideoModal(){
       });
 
       nav(`/watch/${episode.id}`);
-      if(party.roomId) start_playback(episode.id);
+      if(party.roomId) startPlayback(episode.id);
     }
     else {
       nav(`/watch/${videoId}/`);
-      if(party.roomId && videoId) start_playback(videoId);
+      if(party.roomId && videoId) startPlayback(videoId);
     }
 
     onClose();
@@ -101,7 +101,7 @@ export function VideoModal(){
     }
 
     nav(`/watch/${episodeId}`);
-    if(party.roomId) start_playback(episodeId);
+    if(party.roomId) startPlayback(episodeId);
     onClose();
   }
 
