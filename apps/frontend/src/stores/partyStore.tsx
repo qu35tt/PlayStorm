@@ -16,8 +16,6 @@ export type PartyStore = {
   hostId: string | null;
   members: PartyUser[];
   error: string | null;
-  // remote: MediaRemoteControl | null;
-  // setRemote: (remote: MediaRemoteControl) => void;
   player: MediaPlayerInstance | null;
   setUser: (user: PartyUser) => void;
   setRoomId: (roomId: string | null) => void;
@@ -54,6 +52,7 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       videoId: null,
       hostId: null,
       members: [],
+      messages: [],
       error: null,
       player: null,
       setUser: (user) => {
@@ -147,18 +146,26 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       },
 
       startPlayback: (videoId: string) => {
-        set({
-          videoId
-        });
+        set({ videoId });
 
-        if(socket && videoId){
+        if (socket && videoId) {
           socket.emit('startPlayback', { videoId, currentTime: 0 });
         }
       },
 
       playbackAction: (action: PlayerAction) => {
-        socket.emit('playbackAction', action)
-        console.log("Emitted playback action: ", action)
+        const player = get().player;
+        const time = player?.currentTime ?? 0;
+        
+        // Ensure every action (PLAY, PAUSE, SEEK) is sent with a specific timestamp
+        socket.emit('playbackAction', { ...action, time });
+        console.log("Emitted playback action with time: ", { ...action, time });
+      },
+
+      syncState: (data: { time: number; isPlaying: boolean }) => {
+        if (socket) {
+          socket.emit('syncState', { ...data, sentAt: Date.now() });
+        }
       },
 
       endPlayback: () => {

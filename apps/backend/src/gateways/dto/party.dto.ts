@@ -60,3 +60,33 @@ export enum PlayerAction {
   SEEK_FRW = 'SEEK_FRW',
   SEEK_BCK = 'SEEK_BCK',
 }
+
+export class PlayerActionData {
+  @IsNotEmpty()
+  action: PlayerAction;
+
+  @IsNumber()
+  currentTime: number;
+}
+
+export class ChatMessage {
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @IsString()
+  @IsNotEmpty()
+  avatarUrl: string;
+
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+
+  @IsString()
+  @IsNotEmpty()
+  timestamp: string;
+}

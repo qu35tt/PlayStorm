@@ -29,6 +29,7 @@ import { usePartyStore } from '@/stores/partyStore';
 import type { VideoControlsProps } from '@/types/video-data-types'
 import { useNavigate } from 'react-router';
 import { Button } from './ui/button';
+import { invalidateData } from '@/lib/query-client';
 
 export function VideoControls({ name }: VideoControlsProps) {   
     const player = useMediaPlayer();
@@ -37,8 +38,11 @@ export function VideoControls({ name }: VideoControlsProps) {
     const isMuted = useMediaState('muted');
     const currentTime = useMediaState('currentTime');
     const duration = useMediaState('duration');
+
+    const [showCaptions, setShowCaptions] = useState(false);
     const [showVolume, setShowVolume] = useState(false);
     const hideTimerRef = useRef<number | null>(null);
+
     const { playbackAction, endPlayback, user, hostId } = usePartyStore();
 
     const isHost = user?.id === hostId;
@@ -61,16 +65,20 @@ export function VideoControls({ name }: VideoControlsProps) {
         }, delay);
     }
 
-    const handlePlay = () => {
-        if (!isHost) return;
-        player?.remoteControl.play();
-        playbackAction({action: 'PLAY'});
+    const handlePlay = (e?: React.MouseEvent) => {
+        if (!isHost || !player) return;
+        e?.preventDefault();
+        const currentTime = player.currentTime;
+        player.remoteControl.play();
+        playbackAction({ action: 'PLAY', time: currentTime });
     };
 
-    const handlePause = () => {
-        if (!isHost) return;
-        player?.remoteControl.pause();
-        playbackAction({action: 'PAUSE'});
+    const handlePause = (e?: React.MouseEvent) => {
+        if (!isHost || !player) return;
+        e?.preventDefault();
+        const currentTime = player.currentTime;
+        player.remoteControl.pause();
+        playbackAction({ action: 'PAUSE', time: currentTime });
     };
 
     const handleSeekFrw = () => {
@@ -104,6 +112,7 @@ export function VideoControls({ name }: VideoControlsProps) {
         if (isHost) {
             endPlayback();
         }
+        invalidateData('video-data');
         nav('/home')
     }
     
@@ -204,8 +213,11 @@ export function VideoControls({ name }: VideoControlsProps) {
                         </div>
 
                         <div className='flex items-center gap-4'>
-                            <CaptionButton className="group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors">
-                                <Captions className="w-6 h-6 opacity-50 group-data-[active]:opacity-100" /> 
+                            <CaptionButton className="group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors" onClick={() => setShowCaptions(!showCaptions)}>
+                                {showCaptions ? 
+                                    <CaptionsOff className="w-6 h-6 opacity-50 group-data-[active]:opacity-100" /> :
+                                    <Captions className="w-6 h-6 opacity-50 group-data-[active]:opacity-100" />
+                                }
                             </CaptionButton>
                             <FullscreenButton className="group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors">
                                 <Maximize className="w-6 h-6 group-data-[active]:hidden" />

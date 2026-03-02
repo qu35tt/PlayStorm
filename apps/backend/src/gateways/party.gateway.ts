@@ -9,7 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from "uuid";
-import type { JoinParty, PartyUser, PlaybackData, PlayerAction } from './dto';
+import type { JoinParty, PartyUser, PlaybackData, PlayerAction, ChatMessage } from './dto';
 import { RoomManagementService } from "./room-management.service"
 import { JwtService } from '@nestjs/jwt';
 
@@ -154,4 +154,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.to(roomId).emit('endPlayback');
   }
-}
+
+  @SubscribeMessage('chatMessage')
+  async handleChatMessage(@ConnectedSocket() client: Socket, @MessageBody() data: ChatMessage) {
+    this.validateToken(client);
+    let roomId = client.data.roomId;
+
+    this.server.to(roomId).emit('chatMessage', data);
+  }
+  }

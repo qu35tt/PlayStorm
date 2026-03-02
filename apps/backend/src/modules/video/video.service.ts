@@ -91,37 +91,82 @@ export class VideoService {
         }
     }
 
-    async getVideoData(id: string) {
+    async getVideoData(id: string, userId: string) {
         try {
             // 1. Try to find if the ID belongs to an Episode
             const episode = await this.prisma.episode.findUnique({
                 where: { id },
                 include: {
+                    watchProgress: {
+                        where: { user_id: userId },
+                        select: { last_position: true, isFinished: true }
+                    },
                     season: {
                        include: {
                            video: {
-                               include: { genre: true }
+                               include: { 
+                                   genre: true,
+                                   watchProgress: {
+                                       where: { user_id: userId },
+                                       select: { last_position: true, isFinished: true }
+                                   }
+                               }
                            }
                        }
                    }
                }
            });
+
            if (episode) {
-               // It's an episode: Return combined data (Series name + Episode title)
+               // Fetch all seasons and episodes for this series to enable autoplay logic on frontend
+               const fullSeries = await this.prisma.video.findUnique({
+                   where: { id: episode.season.videoId },
+                   include: {
+                       seasons: {
+                           orderBy: { number: 'asc' },
+                           include: {
+                               episodes: {
+                                   orderBy: { number: 'asc' },
+                                   include: {
+                                       watchProgress: {
+                                           where: { user_id: userId },
+                                           select: { last_position: true, isFinished: true }
+                                       }
+                                   }
+                               }
+                           }
+                       }
+                   }
+               });
+
                return {
-                   id: episode.id,
+                    id: episode.id,
                     name: `${episode.season.video.name} - ${episode.title}`,
-                    banner: episode.thumbnail || episode.season.video.banner, // Fallback to series banner
+                    banner: episode.thumbnail || episode.season.video.banner,
                     description: episode.description || episode.season.video.description,
                     length: episode.length,
                     videotype: 'SERIES',
                     genre: episode.season.video.genre,
                     rls_year: episode.season.video.rls_year,
-                    // Extra metadata for Series UI if needed
                     seriesName: episode.season.video.name,
                     episodeTitle: episode.title,
                     episodeNumber: episode.number,
-                    seasonNumber: episode.season.number
+                    seasonNumber: episode.season.number,
+                    watchProgress: episode.watchProgress[0] ? {
+                        ...episode.watchProgress[0],
+                        last_position: Number(episode.watchProgress[0].last_position)
+                    } : undefined,
+                    // Pass the full series structure for navigation/autoplay
+                    seasons: fullSeries?.seasons.map(season => ({
+                        ...season,
+                        episodes: season.episodes.map(ep => ({
+                            ...ep,
+                            watchProgress: ep.watchProgress[0] ? {
+                                ...ep.watchProgress[0],
+                                last_position: Number(ep.watchProgress[0].last_position)
+                            } : undefined
+                        }))
+                    }))
                 };
             }
    
@@ -130,18 +175,20 @@ export class VideoService {
                 where: { id },
                 include: {
                     genre: true,
+                    watchProgress: {
+                        where: { user_id: userId },
+                        select: { last_position: true, isFinished: true }
+                    },
                     seasons: {
                         orderBy: { number: 'asc' },
                         include: {
                             episodes: {
                                 orderBy: { number: 'asc' },
-                                select: {
-                                    id: true,
-                                    title: true,
-                                    length: true,
-                                    thumbnail: true,
-                                    description: true,
-                                    number: true,
+                                include: {
+                                    watchProgress: {
+                                        where: { user_id: userId },
+                                        select: { last_position: true, isFinished: true }
+                                    }
                                 }
                             }
                         }
@@ -151,7 +198,23 @@ export class VideoService {
    
             if (!video) throw new NotFoundException("Content not found");
    
-            return video;
+            return {
+                ...video,
+                watchProgress: video.watchProgress[0] ? {
+                    ...video.watchProgress[0],
+                    last_position: Number(video.watchProgress[0].last_position)
+                } : undefined,
+                seasons: video.seasons.map(season => ({
+                    ...season,
+                    episodes: season.episodes.map(episode => ({
+                        ...episode,
+                        watchProgress: episode.watchProgress[0] ? {
+                            ...episode.watchProgress[0],
+                            last_position: Number(episode.watchProgress[0].last_position)
+                        } : undefined
+                    }))
+                }))
+            };
         } catch (err) {
             if (err instanceof NotFoundException) throw err;
             throw new InternalServerErrorException(err);
@@ -194,38 +257,50 @@ export class VideoService {
                 throw new BadRequestException('Either videoId or episodeId must be provided');
             }
 
-            const existing = await this.prisma.watchProgress.findFirst({ where: {
-                user_id: userId,
-                video_id: videoId
-            } });
+            // Find existing progress for this specific piece of content
+            const existing = await this.prisma.watchProgress.findFirst({
+                where: {
+                    user_id: userId,
+                    ...(episodeId 
+                        ? { episode_id: episodeId } 
+                        : { video_id: videoId, episode_id: null })
+                }
+            });
 
-            let saveProgress;
+            let saved;
 
             if (existing) {
-                saveProgress = await this.prisma.watchProgress.update({
+                saved = await this.prisma.watchProgress.update({
                     where: { id: existing.id },
-                    data: { last_position: position, isFinished, }
+                    data: { 
+                        last_position: BigInt(position), 
+                        isFinished,
+                        // Ensure IDs are set if they were missing (e.g. videoId for an episode)
+                        video_id: videoId || existing.video_id,
+                        episode_id: episodeId || existing.episode_id
+                    }
                 });
             }
-            else{
-                saveProgress = await this.prisma.watchProgress.create({
+            else {
+                saved = await this.prisma.watchProgress.create({
                     data: { 
                         user_id: userId,
-                        video_id: videoId || undefined, 
-                        episode_id: episodeId || undefined, 
-                        last_position: position, 
+                        video_id: videoId || null, 
+                        episode_id: episodeId || null, 
+                        last_position: BigInt(position), 
                         isFinished,
                         type: videoId ? 'MOVIE' : 'SERIES'
                     }
                 });
-
             }
+            
             return {
-                isFinished: saveProgress.isFinished,
-                last_position: Number(saveProgress.last_position)
+                isFinished: saved.isFinished,
+                last_position: Number(saved.last_position)
             };
 
         } catch (err) {
+            console.error(err);
             throw new InternalServerErrorException(err);
         }
     }
@@ -265,4 +340,85 @@ export class VideoService {
             throw new InternalServerErrorException(err)
         }
     }
-}
+
+    async getRecommendations(userId: string) {
+        try {
+            // 1. Find genres user has finished content for
+            const finishedProgress = await this.prisma.watchProgress.findMany({
+                where: {
+                    user_id: userId,
+                    isFinished: true,
+                },
+                select: {
+                    video_id: true,
+                    episode_id: true,
+                    episode: {
+                        select: {
+                            season: {
+                                select: {
+                                    video: {
+                                        select: {
+                                            genre_id: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    video: {
+                        select: {
+                            genre_id: true
+                        }
+                    }
+                }
+            });
+
+            // Extract genre IDs
+            const genreCounts: Record<number, number> = {};
+            finishedProgress.forEach(p => {
+                const genreId = p.video?.genre_id || p.episode?.season.video.genre_id;
+                if (genreId) {
+                    genreCounts[genreId] = (genreCounts[genreId] || 0) + 1;
+                }
+            });
+
+            // Get top 3 genres
+            const topGenreIds = Object.entries(genreCounts)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 3)
+                .map(([id]) => parseInt(id));
+
+            if (topGenreIds.length === 0) {
+                // Fallback: return 5 random videos if no history
+                const count = await this.prisma.video.count();
+                const skip = Math.max(0, Math.floor(Math.random() * (count - 5)));
+                return this.prisma.video.findMany({
+                    skip,
+                    take: 5,
+                    include: { genre: true }
+                });
+            }
+
+            // 2. Find videos from these genres not watched yet
+            const watchedVideoIds = await this.prisma.watchProgress.findMany({
+                where: { user_id: userId },
+                select: { video_id: true }
+            }).then(progress => progress.map(p => p.video_id).filter(Boolean) as string[]);
+
+            const recommendations = await this.prisma.video.findMany({
+                where: {
+                    genre_id: { in: topGenreIds },
+                    id: { notIn: watchedVideoIds }
+                },
+                take: 10,
+                include: { genre: true }
+            });
+
+            // Return 5 random from the 10 found (or fewer if less found)
+            return recommendations.sort(() => 0.5 - Math.random()).slice(0, 5);
+
+        } catch (err) {
+            throw new InternalServerErrorException(err);
+        }
+    }
+    }

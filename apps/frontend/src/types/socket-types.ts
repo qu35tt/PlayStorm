@@ -22,12 +22,20 @@ export type PlayerAction = {
  time?: number;
 }
 
+export type SyncState = {
+  time: number;
+  isPlaying: boolean;
+  sentAt: number;
+};
+
 export interface ClientToServerEvents {
   createParty: (user: PartyUser) => void;
   joinParty: (data: JoinParty) => void;
   leaveParty: (roomId: string) => void;
   startPlayback: (data: PlaybackData) => void;
   playbackAction: (action: PlayerAction) => void;
+  syncState: (data: SyncState) => void;
+  requestSync: () => void;
   kickUser: (usereId: string) => void;
   endPlayback: (roomId: string) => void;
 }
@@ -39,6 +47,8 @@ export interface ServerToClientEvents {
   partyJoined: (payload?: { members: PartyUser[]; hostId: string }) => void;
   startPlayback: (payload?: { videoId: string }) => void;
   syncPlayback: (payload: PlayerAction) => void;
+  applySyncState: (payload: { time: number; isPlaying: boolean; sentAt: number }) => void;
+  requestHostState: () => void;
   endPlayback: () => void;
   roomNotFound: () => void;
   kicked: () => void;

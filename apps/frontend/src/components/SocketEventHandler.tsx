@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSocket } from '@/context/socket-context';
 import { usePartyStore } from '@/stores/partyStore';
 import { router } from '@/services/router';
-import type { PartyUser, PlayerAction } from '@/types/socket-types';
+import type { PartyUser, PlayerAction} from '@/types/socket-types';
 
 export const SocketEventHandler = () => {
   const socket = useSocket();
@@ -63,15 +63,24 @@ export const SocketEventHandler = () => {
 
     const onPlaybackAction = (data: PlayerAction) => {
       const player = usePartyStore.getState().player;
-      console.log("Received playback action: ", data);
-
       if (!player) return;
 
+      console.log("Received playback action: ", data);
+      
+      // Calculate local adjustment if needed (though SEEK_TO is preferred)
+      const targetTime = data.time ?? player.currentTime;
+
       switch(data.action){
-        case 'PLAY': player.remoteControl.play(); break;
-        case 'PAUSE': player.remoteControl.pause(); break;
-        case 'SEEK_FRW': player.remoteControl.seek(player.currentTime + 10); break;
-        case 'SEEK_BCK': player.remoteControl.seek(player.currentTime - 10); break;
+        case 'PLAY': 
+          player.remoteControl.seek(targetTime);
+          player.remoteControl.play(); 
+          break;
+        case 'PAUSE': 
+          player.remoteControl.seek(targetTime);
+          player.remoteControl.pause(); 
+          break;
+        case 'SEEK_FRW': 
+        case 'SEEK_BCK':
         case 'SEEK_TO':
           if(data.time !== undefined){
             player.remoteControl.seek(data.time);

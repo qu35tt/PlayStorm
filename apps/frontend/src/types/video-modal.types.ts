@@ -1,3 +1,8 @@
+export type WatchProgress = {
+  last_position: number;
+  isFinished: boolean;
+};
+
 export type VideoModalData = {
   id: string;
   name: string;
@@ -11,6 +16,7 @@ export type VideoModalData = {
     name: string;
   };
   seasons?: Season[];
+  watchProgress?: WatchProgress;
   
   // Optional fields returned when querying an individual episode
   seriesName?: string;
@@ -26,6 +32,7 @@ export type Episode = {
   thumbnail: string | null;
   number: number;
   length: number;
+  watchProgress?: WatchProgress;
 };
 
 export type Season = {

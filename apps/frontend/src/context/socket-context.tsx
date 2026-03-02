@@ -29,6 +29,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       const onConnect = () => {
         socket.emit('joinParty', { ...user, roomId } as any);
+        socket.emit('requestSync');
       };
 
       const onRoomNotFound = () => {

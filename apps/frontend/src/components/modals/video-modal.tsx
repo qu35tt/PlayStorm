@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Button } from "../ui/button";
-import { Play, Clock } from "lucide-react";
+import { Play, Clock, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { VideoModalData } from '@/types/video-modal.types'
 import { useVideoData, setVideoData } from "@/lib/query-client";
@@ -48,8 +48,39 @@ export function VideoModal(){
     if (!data) return;
 
     if(data.videotype === "SERIES" && data.seasons && data.seasons.length > 0){
-      const season = data.seasons[0];
-      const episode = season.episodes[0];
+      // Logic to find the best "Resume" episode
+      let resumeEpisode = null;
+      let resumeSeason = null;
+
+      // 1. Find the first episode that the user started but didn't finish
+      for (const s of data.seasons) {
+          for (const e of s.episodes) {
+              if (e.watchProgress && !e.watchProgress.isFinished && e.watchProgress.last_position > 0) {
+                  resumeEpisode = e;
+                  resumeSeason = s;
+                  break;
+              }
+          }
+          if (resumeEpisode) break;
+      }
+
+      // 2. If nothing is "partially watched", find the first episode that hasn't been finished
+      if (!resumeEpisode) {
+          for (const s of data.seasons) {
+              for (const e of s.episodes) {
+                  if (!e.watchProgress || !e.watchProgress.isFinished) {
+                      resumeEpisode = e;
+                      resumeSeason = s;
+                      break;
+                  }
+              }
+              if (resumeEpisode) break;
+          }
+      }
+
+      // Fallback to the very first episode if everything is finished or no progress exists
+      const season = resumeSeason || data.seasons[0];
+      const episode = resumeEpisode || season.episodes[0];
       
       // Pre-seed episode data for the player
       setVideoData(episode.id, {
@@ -62,7 +93,8 @@ export function VideoModal(){
         seriesName: data.name,
         episodeTitle: episode.title,
         episodeNumber: episode.number,
-        seasonNumber: season.number
+        seasonNumber: season.number,
+        seasons: data.seasons 
       });
 
       nav(`/watch/${episode.id}`);
@@ -96,7 +128,8 @@ export function VideoModal(){
         seriesName: data.name,
         episodeTitle: episode.title,
         episodeNumber: episode.number,
-        seasonNumber: season.number
+        seasonNumber: season.number,
+        seasons: data.seasons // Include seasons for autoplay logic
       });
     }
 
@@ -121,10 +154,25 @@ export function VideoModal(){
               <div className="w-full h-full bg-black/65 flex flex-col justify-end items-start">
                 <div className="m-8 space-y-4">
                   <DialogTitle className="text-4xl font-extrabold">{data?.name}</DialogTitle>       
-                  <Button className="w-[10rem] bg-white hover:bg-gray-300 text-black cursor-pointer" onClick={handleClick}><Play className="w-4 h-4 "/> Play</Button>
+                  <Button className="w-[10rem] bg-white hover:bg-gray-300 text-black cursor-pointer" onClick={handleClick}>
+                    <Play className="w-4 h-4 "/> {data?.watchProgress && !data.watchProgress.isFinished ? "Resume" : "Play"}
+                  </Button>
                 </div>
               </div>
             </DialogHeader>
+            {data?.watchProgress && !data.watchProgress.isFinished && data.videotype === 'MOVIE' && (
+              <div className="px-8 mt-4">
+                 <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-indigo-500" 
+                      style={{ width: `${Math.min((data.watchProgress.last_position / data.length) * 100, 100)}%` }}
+                    />
+                 </div>
+                 <p className="text-xs text-gray-400 mt-1">
+                   {Math.floor(data.watchProgress.last_position / 60)}m left of {formatTime(data.length)}
+                 </p>
+              </div>
+            )}
             <DialogDescription className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8 px-4 py-6 text-white">
               {/* Left Column: Description */}
               <div className="space-y-4">
@@ -199,10 +247,26 @@ export function VideoModal(){
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                               <Play className="w-8 h-8 text-white fill-white" />
                           </div>
+                          {ep.watchProgress?.isFinished && (
+                            <div className="absolute top-1 right-1 bg-green-500/80 text-white p-1 rounded-full shadow-lg">
+                              <CheckCircle2 className="w-4 h-4" />
+                            </div>
+                          )}
+                          {ep.watchProgress && (
+                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-600">
+                               <div 
+                                 className={cn("h-full transition-all", ep.watchProgress.isFinished ? "bg-green-500" : "bg-indigo-500")}
+                                 style={{ width: ep.watchProgress.isFinished ? "100%" : `${Math.min((ep.watchProgress.last_position / ep.length) * 100, 100)}%` }}
+                               />
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-col justify-center w-full">
                           <div className="flex justify-between items-start">
-                            <h4 className="font-bold text-gray-200 mb-1">{ep.number}. {ep.title}</h4>
+                            <h4 className={cn("font-bold mb-1 transition-colors", ep.watchProgress?.isFinished ? "text-gray-500" : "text-gray-200")}>
+                              {ep.number}. {ep.title} 
+                              {ep.watchProgress?.isFinished && <span className="ml-2 text-[10px] uppercase tracking-wider text-green-500 font-bold">Watched</span>}
+                            </h4>
                             <span className="text-xs text-gray-500 flex items-center gap-1">
                               <Clock className="w-3 h-3"/> {formatTime(ep.length)}
                             </span>

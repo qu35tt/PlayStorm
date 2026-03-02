@@ -9,9 +9,11 @@ import { useRef } from "react"
 import { StartPartyButton } from "./startPartyButton";
 import type { VideoData, OutletContext } from "@/types/video-data-types"
 import { GENRE_MAP } from "@/configs/genreMap"
+import { useRecommendations } from "@/lib/query-client"
 
 export function VideoLists() {
   const { videos, searchQuery } = useOutletContext<OutletContext>();
+  const { data: recommendations = [] } = useRecommendations();
   
   const rowViewportsRef = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -34,6 +36,13 @@ export function VideoLists() {
         data: rowData
     };
     }).filter(row => row.data.length > 0);
+
+    if (recommendations.length > 0) {
+        videoRows.unshift({
+            title: "Because you watched...",
+            data: recommendations
+        });
+    }
 
   function handleScroll(rowIndex: number, direction: number){
     const el = rowViewportsRef.current[rowIndex];

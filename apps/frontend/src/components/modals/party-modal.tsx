@@ -117,7 +117,7 @@ export function PartyModal() {
           forceMount
           className="w-1/4 h-3/4 p-4 flex flex-col bg-[#0E111A] border-0 text-white"
         >
-          <DialogHeader className="flex-grow">
+          <DialogHeader className="flex-grow rounded-2xl">
             <h2
               className="font-bold text-3xl text-center"
             >
@@ -142,12 +142,6 @@ export function PartyModal() {
                   />
                 ))}
               </div>
-              {/* <Separator orientation='vertical' />
-              <div
-                className="w-full h-full"
-              >
-                <Chat />
-              </div> */}
             </div>
           </DialogHeader>
           <DialogFooter className="w-full">
@@ -161,7 +155,7 @@ export function PartyModal() {
     <Dialog open={isModalOpen} onOpenChange={onClose}>
       <DialogContent
         forceMount
-        className="w-1/4 h-1/4 bg-[#0E111A] border-0 text-white focus:outline-0"
+        className="w-[25rem] h-[15rem] bg-[#0E111A] border-0 text-white focus:outline-0 rounded-2xl"
       >
         <DialogHeader>
           <h2
