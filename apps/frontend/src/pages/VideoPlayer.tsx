@@ -27,7 +27,31 @@ export function VideoPlayer() {
 
     const { data: current } = useVideoData(id);
 
-    const { setPlayer, startPlayback, roomId } = usePartyStore();
+    const { setPlayer, startPlayback, roomId, syncState, bufferingStatus } = usePartyStore();
+
+    useEffect(() => {
+        if (!roomId || !player.current) return;
+
+        const interval = setInterval(() => {
+            if (player.current) {
+                syncState({
+                    time: player.current.currentTime,
+                    isPlaying: !player.current.paused
+                });
+            }
+        }, 5000); // Heartbeat every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [roomId, syncState]);
+
+    const handleWaiting = () => {
+        if (roomId) bufferingStatus(true);
+    };
+
+    const handleCanPlay = () => {
+        if (roomId) bufferingStatus(false);
+        setPlayer(player.current);
+    };
 
     useEffect(() => {
         async function getVideo()
@@ -45,10 +69,6 @@ export function VideoPlayer() {
         if(id) getVideo()
 
     }, [id, user.token])
-
-    function canPlay() {
-        
-    }
 
     const handleTimeUpdate = (detail: any) => {
         const currentTime = detail.currentTime;
@@ -137,9 +157,10 @@ export function VideoPlayer() {
             src={{src: `${import.meta.env.VITE_API_URL}video/stream/${id}/master.m3u8`, type: 'application/x-mpegurl'}} 
             className='relative w-screen h-screen flex justify-center' 
             ref={player} 
-            onCanPlay={canPlay} 
+            onCanPlay={handleCanPlay} 
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleEnded}
+            onWaiting={handleWaiting}
             keyTarget='player' 
             crossOrigin
             currentTime={current.watchProgress && !current.watchProgress.isFinished ? current.watchProgress.last_position : 0}

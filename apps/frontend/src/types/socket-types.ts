@@ -35,22 +35,19 @@ export interface ClientToServerEvents {
   startPlayback: (data: PlaybackData) => void;
   playbackAction: (action: PlayerAction) => void;
   syncState: (data: SyncState) => void;
-  requestSync: () => void;
   kickUser: (usereId: string) => void;
   endPlayback: (roomId: string) => void;
 }
 
 export interface ServerToClientEvents {
-  partyCreated: (payload: { roomId: string; hostId: string }) => void;
+  partyCreated: (payload: { roomId: string }) => void;
   newUserJoined: (payload: { userInfo: PartyUser }) => void;
   userLeft: (payload?: { userInfo: PartyUser }) => void;
-  partyJoined: (payload?: { members: PartyUser[]; hostId: string }) => void;
+  partyJoined: (payload?: { members: PartyUser[]; state?: { videoId: string, currentTime: number, isPlaying: boolean } }) => void;
   startPlayback: (payload?: { videoId: string }) => void;
-  syncPlayback: (payload: PlayerAction) => void;
+  syncPlayback: (payload: PlayerAction & { isHeartbeat?: boolean }) => void;
   applySyncState: (payload: { time: number; isPlaying: boolean; sentAt: number }) => void;
-  requestHostState: () => void;
   endPlayback: () => void;
   roomNotFound: () => void;
   kicked: () => void;
-  newHost: (payload: { hostId: string }) => void;
 }

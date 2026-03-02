@@ -13,16 +13,19 @@ export type PartyStore = {
   user: PartyUser | null;
   roomId: string | null;
   videoId: string | null;
-  hostId: string | null;
   members: PartyUser[];
+  isRoomBuffering: boolean;
+  bufferingCount: number;
+  totalCount: number;
   error: string | null;
   player: MediaPlayerInstance | null;
   setUser: (user: PartyUser) => void;
   setRoomId: (roomId: string | null) => void;
   setVideoId: (videoId: string | null) => void;
-  setHostId: (hostId: string | null) => void;
   setMembers: (members: PartyUser[]) => void;
   setPlayer: (player: MediaPlayerInstance) => void;
+  setRoomBuffering: (isBuffering: boolean, count?: number, total?: number) => void;
+  bufferingStatus: (isBuffering: boolean) => void;
   addMember: (user: PartyUser) => void;
   removeMember: (user: PartyUser) => void;
   setIsConnected: (isConnected: boolean) => void;
@@ -34,6 +37,7 @@ export type PartyStore = {
   leaveParty: () => void;
   startPlayback: (videoId: string) => void;
   playbackAction: (action: PlayerAction) => void;
+  syncState: (data: { time: number; isPlaying: boolean }) => void;
   endPlayback: () => void;
 };
 
@@ -50,8 +54,10 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       user: null,
       roomId: null,
       videoId: null,
-      hostId: null,
       members: [],
+      isRoomBuffering: false,
+      bufferingCount: 0,
+      totalCount: 0,
       messages: [],
       error: null,
       player: null,
@@ -66,9 +72,20 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
 
       setRoomId: (roomId) => set({ roomId }),
       setVideoId: (videoId) => set({ videoId }),
-      setHostId: (hostId) => set({ hostId }),
       setMembers: (members) => set({ members }),
-      
+
+      setRoomBuffering: (isBuffering, count = 0, total = 0) => set({ 
+        isRoomBuffering: isBuffering, 
+        bufferingCount: count, 
+        totalCount: total 
+      }),
+
+      bufferingStatus: (isBuffering) => {
+        if (socket.connected) {
+          socket.emit('bufferingStatus', { isBuffering } as any);
+        }
+      },
+
       addMember: (userInfo) => {
         set((state) => {
           const userExists = state.members.some((member) => member.id === userInfo.id);
@@ -156,7 +173,7 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       playbackAction: (action: PlayerAction) => {
         const player = get().player;
         const time = player?.currentTime ?? 0;
-        
+
         // Ensure every action (PLAY, PAUSE, SEEK) is sent with a specific timestamp
         socket.emit('playbackAction', { ...action, time });
         console.log("Emitted playback action with time: ", { ...action, time });
@@ -164,14 +181,14 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
 
       syncState: (data: { time: number; isPlaying: boolean }) => {
         if (socket) {
-          socket.emit('syncState', { ...data, sentAt: Date.now() });
+          socket.emit('syncState', { ...data, sentAt: Date.now() } as any);
         }
       },
 
       endPlayback: () => {
         const id = get().roomId
         console.log("End playback was called in room: ", id)
-        socket.emit('endPlayback', id!)
+        socket.emit('endPlayback')
       },
     }),
     {
@@ -181,7 +198,6 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
         user: state.user || null,
         roomId: state.roomId || null,
         videoId: state.videoId || null,
-        hostId: state.hostId || null,
         members: state.members || [],
       }),
     },

@@ -3,7 +3,7 @@ import { DisconnectResult ,PartyUser } from './dto'
 
 @Injectable()
 export class RoomManagementService {
-    private rooms = new Map<string, { hostId: string, users: Map<string, PartyUser> }>();
+    private rooms = new Map<string, { users: Map<string, PartyUser> }>();
 
     private socketToRoom = new Map<string, {roomId: string, user: PartyUser}>();
 
@@ -11,16 +11,11 @@ export class RoomManagementService {
         return this.rooms.has(roomId);
     }
 
-    public getRoomHost(roomId: string): string | undefined {
-        return this.rooms.get(roomId)?.hostId;
-    }
-
     public addUserToRoom(roomId: string, user: PartyUser, socketId: string): PartyUser[] {
         let room = this.rooms.get(roomId);
 
         if (!room) {
-            // First user is host
-            room = { hostId: user.id, users: new Map() };
+            room = { users: new Map() };
             this.rooms.set(roomId, room);
         }
         
@@ -46,7 +41,6 @@ export class RoomManagementService {
         }
 
         const roomUsers = room.users;
-        const isHost = room.hostId === user.id;
 
         // Only remove if the specific user reference exists (handles re-joins gracefully)
         const currentUser = roomUsers.get(user.id);
@@ -59,13 +53,6 @@ export class RoomManagementService {
             return null;
         }
 
-        let newHostId: string | undefined = undefined;
-        if (isHost && roomUsers.size > 0) {
-            // Assign next available user as host
-            newHostId = Array.from(roomUsers.keys())[0];
-            room.hostId = newHostId;
-        }
-
         if(roomUsers.size === 0) {
             this.rooms.delete(roomId);
         }
@@ -75,8 +62,7 @@ export class RoomManagementService {
         return {
             roomId,
             user,
-            updatedUserList: Array.from(roomUsers.values()),
-            newHostId
+            updatedUserList: Array.from(roomUsers.values())
         }
     }
 
@@ -88,13 +74,12 @@ export class RoomManagementService {
         return Array.from(room.users.values());
     }
 
-    // public async findSocketIdByUserId(userId: string): Promise<string | null> {
-    //     // Iterate over the [socketId, { roomId, user }] entries
-    //     for (const [socketId, data] of this.socketToRoom.entries()) {
-    //         if (data.user.id === userId) {
-    //             return socketId;
-    //         }
-    //     }
-    //     return null;
-    // }
+    public getSocketIdByUserId(userId: string): string | undefined {
+        for (const [socketId, data] of this.socketToRoom.entries()) {
+            if (data.user.id === userId) {
+                return socketId;
+            }
+        }
+        return undefined;
+    }
 }

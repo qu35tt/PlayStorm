@@ -20,63 +20,37 @@ import { JwtService } from '@nestjs/jwt';
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  
+
+  // Track room playback state: { [roomId]: { videoId: string, currentTime: number, isPlaying: boolean } }
+  private roomStates = new Map<string, { videoId: string, currentTime: number, isPlaying: boolean }>();
+
   constructor(
     private readonly roomService: RoomManagementService,
     private readonly jwtService: JwtService
   ) {}
-  
+
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: Socket) {
-    try {
-      const authHeader = client.handshake.headers.authorization;
-      const token = authHeader && authHeader.split(' ')[1];
+  handleConnection(client: Socket) {}
 
-      if (!token) {
-        throw new Error('No token provided');
-      }
-
-      this.jwtService.verify(token);
-      client.data.token = token; // Store token for periodic re-validation
-      console.log(`Client connected: ${client.id}`);
-    } catch (error) {
-      console.log(`Client disconnected (Unauthorized): ${client.id}`);
-      client.disconnect();
-    }
-  }
-
-  private validateToken(client: Socket) {
-    try {
-      const token = client.data.token;
-      if (!token) throw new Error();
-      this.jwtService.verify(token);
-    } catch (error) {
-      client.disconnect();
-      throw new Error('Unauthorized');
-    }
-  }
+  private async validateToken(client: Socket) {}
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    
+
     const result = this.roomService.removeUserBySocketId(client.id);
     if (!result) return;
 
-    const { roomId, user: userInfo, newHostId } = result;
+    const { roomId, user: userInfo } = result;
 
     client.to(roomId).emit('userLeft', { userInfo });
-    
-    if (newHostId) {
-      this.server.to(roomId).emit('newHost', { hostId: newHostId });
-    }
   }
 
-  
+
   @SubscribeMessage('createParty')
   async handlePartyCreation(@ConnectedSocket() client: Socket, @MessageBody() user: PartyUser) {
-    this.validateToken(client);
+    await this.validateToken(client);
     const roomId = uuidv4();
 
     client.data.user = user;
@@ -86,7 +60,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.roomService.addUserToRoom(roomId, user, client.id);
 
-    client.emit('partyCreated', { roomId, hostId: user.id });
+    client.emit('partyCreated', { roomId });
   }
 
   @SubscribeMessage('joinParty')
@@ -107,9 +81,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.roomService.addUserToRoom(roomId, userInfo, client.id);
 
     const allMembersInRoom = this.roomService.getUsersInRoom(roomId); 
-    const hostId = this.roomService.getRoomHost(roomId);
 
-    client.emit('partyJoined', { members: allMembersInRoom, hostId });
+    // Send existing state to the newly joined member
+    const roomState = this.roomStates.get(roomId);
+
+    client.emit('partyJoined', { members: allMembersInRoom, state: roomState });
 
     client.to(roomId).emit('newUserJoined', { userInfo })
   }
@@ -120,13 +96,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const result = this.roomService.removeUserBySocketId(client.id);
     if (!result) return;
 
-    const { roomId, user: userInfo, newHostId } = result;
-    
+    const { roomId, user: userInfo } = result;
+
     client.to(roomId).emit('userLeft', { userInfo })
-    
-    if (newHostId) {
-      this.server.to(roomId).emit('newHost', { hostId: newHostId });
-    }
 
     client.leave(roomId);
   }
@@ -135,31 +107,56 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleStartPlayback(@ConnectedSocket() client: Socket, @MessageBody() data: PlaybackData) {
     this.validateToken(client);
     let roomId = client.data.roomId;
+    if (!roomId) return;
+
+    this.roomStates.set(roomId, { videoId: data.videoId, currentTime: data.currentTime, isPlaying: true });
 
     client.to(roomId).emit('startPlayback', {videoId: data.videoId, currentTime: data.currentTime})
   }
 
   @SubscribeMessage('playbackAction')
-  async handlePlaybackAction(@ConnectedSocket() client: Socket, @MessageBody() action: PlayerAction) {
+  async handlePlaybackAction(@ConnectedSocket() client: Socket, @MessageBody() action: any) {
     this.validateToken(client);
-    let roomId = client.data.roomId;
+    const roomId = client.data.roomId;
+    if (!roomId) return;
+
+    // Update state cache
+    const currentState = this.roomStates.get(roomId);
+    if (currentState) {
+      if (action.action === 'PLAY') currentState.isPlaying = true;
+      if (action.action === 'PAUSE') currentState.isPlaying = false;
+      if (action.time !== undefined) currentState.currentTime = action.time;
+    }
 
     client.to(roomId).emit('syncPlayback', action)
+  }
+
+  @SubscribeMessage('syncState')
+  async handleSyncState(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+    this.validateToken(client);
+    const roomId = client.data.roomId;
+    if (!roomId) return;
+
+    // Update server side state tracking
+    const state = this.roomStates.get(roomId);
+    if (state) {
+        state.currentTime = data.time;
+        state.isPlaying = data.isPlaying;
+    }
+
+    client.to(roomId).emit('syncPlayback', {
+      ...data,
+      isHeartbeat: true
+    });
   }
 
   @SubscribeMessage('endPlayback') 
   async handleEndPlayback(@ConnectedSocket() client: Socket) {
     this.validateToken(client);
     let roomId = client.data.roomId;
+    if (!roomId) return;
 
+    this.roomStates.delete(roomId);
     client.to(roomId).emit('endPlayback');
   }
-
-  @SubscribeMessage('chatMessage')
-  async handleChatMessage(@ConnectedSocket() client: Socket, @MessageBody() data: ChatMessage) {
-    this.validateToken(client);
-    let roomId = client.data.roomId;
-
-    this.server.to(roomId).emit('chatMessage', data);
-  }
-  }
+}

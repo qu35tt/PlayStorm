@@ -43,11 +43,11 @@ export function VideoControls({ name }: VideoControlsProps) {
     const [showVolume, setShowVolume] = useState(false);
     const hideTimerRef = useRef<number | null>(null);
 
-    const { playbackAction, endPlayback, user, hostId } = usePartyStore();
-
-    const isHost = user?.id === hostId;
+    const { playbackAction, endPlayback, roomId, isRoomBuffering, bufferingCount, totalCount } = usePartyStore();
 
     const nav = useNavigate();
+
+    const isInteractionDisabled = isRoomBuffering;
 
     function showVolumePop(){
         if(hideTimerRef.current){
@@ -66,50 +66,52 @@ export function VideoControls({ name }: VideoControlsProps) {
     }
 
     const handlePlay = (e?: React.MouseEvent) => {
-        if (!isHost || !player) return;
+        if (!player || isInteractionDisabled) return;
         e?.preventDefault();
         const currentTime = player.currentTime;
         player.remoteControl.play();
-        playbackAction({ action: 'PLAY', time: currentTime });
+        if (roomId) playbackAction({ action: 'PLAY', time: currentTime });
     };
 
     const handlePause = (e?: React.MouseEvent) => {
-        if (!isHost || !player) return;
+        if (!player || isInteractionDisabled) return;
         e?.preventDefault();
         const currentTime = player.currentTime;
         player.remoteControl.pause();
-        playbackAction({ action: 'PAUSE', time: currentTime });
+        if (roomId) playbackAction({ action: 'PAUSE', time: currentTime });
     };
 
     const handleSeekFrw = () => {
-        if (!player || !isHost) return;
+        if (!player || isInteractionDisabled) return;
         const newTime = Math.min(currentTime + 10, duration);
         player.currentTime = newTime;
-        playbackAction({ action: 'SEEK_TO', time: newTime });
+        if (roomId) playbackAction({ action: 'SEEK_TO', time: newTime });
     };
 
     const handleSeekBck = () => {
-        if (!player || !isHost) return;
+        if (!player || isInteractionDisabled) return;
         const newTime = Math.max(currentTime - 10, 0);
         player.currentTime = newTime;
-        playbackAction({ action: 'SEEK_TO', time: newTime });
+        if (roomId) playbackAction({ action: 'SEEK_TO', time: newTime });
     }
 
     const handleSeekCommit = (e: any) => {
-        if (!player || !isHost) return;
+        if (!player || isInteractionDisabled) return;
         const newTime = e.detail;
         player.currentTime = newTime;
 
-        playbackAction({
-            action: 'SEEK_TO', 
-            time: newTime
-        });
+        if (roomId) {
+            playbackAction({
+                action: 'SEEK_TO', 
+                time: newTime
+            });
+        }
         
         console.log("Seeking to time (absolute): ", newTime);
     }
 
     const handleReturn = () => {
-        if (isHost) {
+        if (roomId) {
             endPlayback();
         }
         invalidateData('video-data');
@@ -124,6 +126,23 @@ export function VideoControls({ name }: VideoControlsProps) {
 
     return (
         <>
+            {isRoomBuffering && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all animate-in fade-in">
+                    <div className="bg-black/80 border border-white/20 p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-6">
+                        <div className="relative w-16 h-16">
+                            <div className="absolute inset-0 border-4 border-white/10 rounded-full"></div>
+                            <div className="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
+                        </div>
+                        <div className="flex flex-col items-center text-center">
+                            <h3 className="text-xl font-bold text-white mb-2">Syncing Room...</h3>
+                            <p className="text-gray-400">
+                                Waiting for <span className="text-indigo-400 font-mono font-bold">{bufferingCount} / {totalCount}</span> members to buffer
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Controls.Root className="data-[visible]:opacity-100 absolute inset-0 z-10 flex flex-col opacity-0 transition-opacity pointer-events-none text-white bg-gradient-to-t from-black/80 via-transparent to-black/40">
                 <Button 
                     className='pointer-events-auto absolute top-6 left-6 w-14 h-14 p-3 border-2 border-white/50 bg-black/20 hover:bg-white/20 rounded-full flex justify-center items-center text-white transition-all' 
@@ -138,7 +157,7 @@ export function VideoControls({ name }: VideoControlsProps) {
 
                 <Controls.Group className="absolute bottom-0 left-0 pointer-events-auto w-full flex flex-col px-6 pb-6 pt-12">
                     {/* Time Slider above buttons */}
-                    <div className={`w-full mb-4 ${!isHost ? 'pointer-events-none opacity-80' : ''}`}>
+                    <div className={`w-full mb-4 ${isInteractionDisabled ? 'pointer-events-none opacity-50' : ''}`}>
                         <TimeSlider.Root 
                             className="group relative flex h-10 w-full items-center cursor-pointer touch-none select-none outline-none" 
                             onDragEnd={handleSeekCommit}
@@ -154,7 +173,7 @@ export function VideoControls({ name }: VideoControlsProps) {
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-4">
                             <PlayButton 
-                                className="group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors"
+                                className={`group ring-sky-400 relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors ${isInteractionDisabled ? 'opacity-50 pointer-events-none' : ''}`}
                                 onClick={isPaused ? handlePlay : handlePause}
                             >
                                 {isPaused ? <Play className='w-7 h-7 fill-white' /> : <Pause className='w-7 h-7 fill-white' />}
@@ -163,7 +182,7 @@ export function VideoControls({ name }: VideoControlsProps) {
                             <SeekButton 
                                 seconds={-10} 
                                 onClick={handleSeekBck} 
-                                className='group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors'
+                                className={`group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors ${isInteractionDisabled ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <ArrowLeft className='w-6 h-6'/>
                             </SeekButton>
@@ -171,7 +190,7 @@ export function VideoControls({ name }: VideoControlsProps) {
                             <SeekButton 
                                 seconds={10} 
                                 onClick={handleSeekFrw} 
-                                className='group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors'
+                                className={`group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors ${isInteractionDisabled ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <ArrowRight className='w-6 h-6'/>
                             </SeekButton>

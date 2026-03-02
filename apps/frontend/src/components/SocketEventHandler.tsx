@@ -20,19 +20,31 @@ export const SocketEventHandler = () => {
       usePartyStore.getState().setError(`Disconnected: ${reason}`);
     };
 
-    const onPartyCreated = (payload: { roomId: string; hostId: string }) => {
+    const onPartyCreated = (payload: { roomId: string }) => {
       usePartyStore.getState().setRoomId(payload.roomId);
-      usePartyStore.getState().setHostId(payload.hostId);
       const user = usePartyStore.getState().user;
       if (user) usePartyStore.getState().setMembers([user]);
     };
 
-    const onPartyJoined = (payload?: { members: PartyUser[]; hostId: string }) => {
+    const onPartyJoined = (payload?: { members: PartyUser[]; state?: { videoId: string, currentTime: number, isPlaying: boolean } }) => {
+      console.log("Party joined event received:", payload);
       if (payload?.members) {
         usePartyStore.getState().setMembers(payload.members);
       }
-      if (payload?.hostId) {
-        usePartyStore.getState().setHostId(payload.hostId);
+      
+      if (payload?.state) {
+        const { videoId, currentTime, isPlaying } = payload.state;
+        const player = usePartyStore.getState().player;
+        
+        console.log("Applying initial state to player:", { videoId, currentTime, isPlaying, hasPlayer: !!player });
+
+        if (videoId) usePartyStore.getState().setVideoId(videoId);
+        
+        if (player) {
+          player.remoteControl.seek(currentTime);
+          if (isPlaying) player.remoteControl.play();
+          else player.remoteControl.pause();
+        }
       }
     };
 
@@ -48,12 +60,6 @@ export const SocketEventHandler = () => {
       }
     };
 
-    const onNewHost = (payload: { hostId: string }) => {
-      if (payload.hostId) {
-        usePartyStore.getState().setHostId(payload.hostId);
-      }
-    };
-
     const onStartPlayback = (payload?: { videoId: string }) => {
       if (payload?.videoId) {
         usePartyStore.getState().setVideoId(payload.videoId);
@@ -61,14 +67,26 @@ export const SocketEventHandler = () => {
       }
     };
 
-    const onPlaybackAction = (data: PlayerAction) => {
+    const onPlaybackAction = (data: PlayerAction & { isHeartbeat?: boolean; isSyncResponse?: boolean }) => {
+      console.log("Received playback action event:", data);
       const player = usePartyStore.getState().player;
-      if (!player) return;
-
-      console.log("Received playback action: ", data);
       
-      // Calculate local adjustment if needed (though SEEK_TO is preferred)
+      if (!player) {
+        console.warn("Playback action received but player instance is not set in store yet.");
+        return;
+      }
+      
       const targetTime = data.time ?? player.currentTime;
+
+      // For heartbeats, only sync if drift is more than 2 seconds
+      if (data.isHeartbeat) {
+        const drift = Math.abs(player.currentTime - targetTime);
+        if (drift < 2) return; 
+        
+        // Only sync time for heartbeat, don't force play/pause if it matches
+        player.remoteControl.seek(targetTime);
+        return;
+      }
 
       switch(data.action){
         case 'PLAY': 
@@ -93,8 +111,23 @@ export const SocketEventHandler = () => {
       router.navigate('/home');
     };
 
-    const onKicked = () => {
-      usePartyStore.getState().leaveParty();
+    const onRoomBuffering = (payload: { bufferingCount: number, totalCount: number }) => {
+      console.log("Room is buffering:", payload);
+      usePartyStore.getState().setRoomBuffering(true, payload.bufferingCount, payload.totalCount);
+
+      const player = usePartyStore.getState().player;
+      if (player && !player.paused) {
+        player.remoteControl.pause();
+      }
+    };
+
+    const onRoomReady = () => {
+      console.log("Room is ready!");
+      usePartyStore.getState().setRoomBuffering(false);
+
+      const player = usePartyStore.getState().player;
+      // We don't force play here, we just allow it. 
+      // Actually, it's better to stay paused until someone clicks play OR if we were playing before.
     };
 
     socket.on('connect', onConnect);
@@ -104,10 +137,10 @@ export const SocketEventHandler = () => {
     socket.on('newUserJoined', onNewUserJoined);
     socket.on('userLeft', onUserLeft);
     socket.on('startPlayback', onStartPlayback);
-    socket.on('syncPlayback', onPlaybackAction);
     socket.on('endPlayback', onEndPlayback);
-    socket.on('kicked', onKicked);
-    socket.on('newHost', onNewHost);
+    socket.on('syncPlayback', onPlaybackAction);
+    socket.on('roomBuffering', onRoomBuffering);
+    socket.on('roomReady', onRoomReady);
 
     return () => {
       socket.off('connect', onConnect);
@@ -117,10 +150,10 @@ export const SocketEventHandler = () => {
       socket.off('newUserJoined', onNewUserJoined);
       socket.off('userLeft', onUserLeft);
       socket.off('startPlayback', onStartPlayback);
-      socket.off('syncPlayback', onPlaybackAction);
       socket.off('endPlayback', onEndPlayback);
-      socket.off('kicked', onKicked);
-      socket.off('newHost', onNewHost);
+      socket.off('syncPlayback', onPlaybackAction);
+      socket.off('roomBuffering', onRoomBuffering);
+      socket.off('roomReady', onRoomReady);
     };
   }, [socket]);
 
