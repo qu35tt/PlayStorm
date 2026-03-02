@@ -83,14 +83,14 @@ export function VideoControls({ name }: VideoControlsProps) {
 
     const handleSeekFrw = () => {
         if (!player || isInteractionDisabled) return;
-        const newTime = Math.min(currentTime + 10, duration);
+        const newTime = Math.min(player.currentTime + 10, player.state.duration);
         player.currentTime = newTime;
         if (roomId) playbackAction({ action: 'SEEK_TO', time: newTime });
     };
 
     const handleSeekBck = () => {
         if (!player || isInteractionDisabled) return;
-        const newTime = Math.max(currentTime - 10, 0);
+        const newTime = Math.max(player.currentTime - 10, 0);
         player.currentTime = newTime;
         if (roomId) playbackAction({ action: 'SEEK_TO', time: newTime });
     }
@@ -98,7 +98,9 @@ export function VideoControls({ name }: VideoControlsProps) {
     const handleSeekCommit = (e: any) => {
         if (!player || isInteractionDisabled) return;
         const newTime = e.detail;
-        player.currentTime = newTime;
+        
+        // Use remoteControl to ensure state is synchronized correctly
+        player.remoteControl.seek(newTime);
 
         if (roomId) {
             playbackAction({
@@ -179,21 +181,19 @@ export function VideoControls({ name }: VideoControlsProps) {
                                 {isPaused ? <Play className='w-7 h-7 fill-white' /> : <Pause className='w-7 h-7 fill-white' />}
                             </PlayButton>
 
-                            <SeekButton 
-                                seconds={-10} 
+                            <Button 
                                 onClick={handleSeekBck} 
-                                className={`group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors ${isInteractionDisabled ? 'opacity-50 pointer-events-none' : ''}`}
+                                className={`group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none bg-transparent hover:bg-white/20 transition-colors ${isInteractionDisabled ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <ArrowLeft className='w-6 h-6'/>
-                            </SeekButton>
+                            </Button>
 
-                            <SeekButton 
-                                seconds={10} 
+                            <Button 
                                 onClick={handleSeekFrw} 
-                                className={`group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none hover:bg-white/20 transition-colors ${isInteractionDisabled ? 'opacity-50 pointer-events-none' : ''}`}
+                                className={`group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none bg-transparent hover:bg-white/20 transition-colors ${isInteractionDisabled ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <ArrowRight className='w-6 h-6'/>
-                            </SeekButton>
+                            </Button>
 
                             <div className="flex items-center gap-2 ml-2 font-mono text-sm">
                                 <Time type="current" />

@@ -19,6 +19,7 @@ export type PartyStore = {
   totalCount: number;
   error: string | null;
   player: MediaPlayerInstance | null;
+  lastActionTime: number;
   setUser: (user: PartyUser) => void;
   setRoomId: (roomId: string | null) => void;
   setVideoId: (videoId: string | null) => void;
@@ -61,6 +62,7 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       messages: [],
       error: null,
       player: null,
+      lastActionTime: 0,
       setUser: (user) => {
         set({ user });
       },
@@ -172,11 +174,13 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
 
       playbackAction: (action: PlayerAction) => {
         const player = get().player;
-        const time = player?.currentTime ?? 0;
+        
+        // Use provided time if available, otherwise fallback to player's current time
+        const time = action.time !== undefined ? action.time : (player?.currentTime ?? 0);
 
-        // Ensure every action (PLAY, PAUSE, SEEK) is sent with a specific timestamp
+        set({ lastActionTime: Date.now() });
         socket.emit('playbackAction', { ...action, time });
-        console.log("Emitted playback action with time: ", { ...action, time });
+        console.log("Emitted playback action: ", { ...action, time });
       },
 
       syncState: (data: { time: number; isPlaying: boolean }) => {

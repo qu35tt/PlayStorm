@@ -69,10 +69,19 @@ export const SocketEventHandler = () => {
 
     const onPlaybackAction = (data: PlayerAction & { isHeartbeat?: boolean; isSyncResponse?: boolean }) => {
       console.log("Received playback action event:", data);
-      const player = usePartyStore.getState().player;
+      const state = usePartyStore.getState();
+      const player = state.player;
       
       if (!player) {
         console.warn("Playback action received but player instance is not set in store yet.");
+        return;
+      }
+
+      // If we recently performed a local action, ignore heartbeats for a short period
+      // to avoid being yanked back by stale state from other clients
+      const now = Date.now();
+      if (data.isHeartbeat && (now - state.lastActionTime < 2000)) {
+        console.log("Ignoring heartbeat due to recent local action");
         return;
       }
       
