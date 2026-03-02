@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put, UseGuards, Post, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, UseGuards, Post, UseInterceptors, UploadedFile, Request } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDataDto } from './dto';
 import { AuthGuard } from "../auth.guard"
@@ -9,21 +9,21 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @UseGuards(AuthGuard)
-  @Get('me/:id')
-  getUser(@Param('id') id: string){
-    return this.userService.getUser(id);
+  @Get('me')
+  getUser(@Request() req){
+    return this.userService.getUser(req.user.sub);
   }
 
   @UseGuards(AuthGuard)
-  @Put('update/:id')
-  updateUser(@Body() dto: UserDataDto, @Param('id') id: string){
-    return this.userService.updateUser(dto, id);
+  @Put('update')
+  updateUser(@Body() dto: UserDataDto, @Request() req){
+    return this.userService.updateUser(dto, req.user.sub);
   }
 
   @UseGuards(AuthGuard)
-  @Post('upload/:id')
+  @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  uploadAvatar(@UploadedFile() file: Express.Multer.File, @Param('id') id: string){
-    return this.userService.uploadAvatar(id, file)
+  uploadAvatar(@UploadedFile() file: Express.Multer.File, @Request() req){
+    return this.userService.uploadAvatar(req.user.sub, file)
   }
 }

@@ -47,7 +47,7 @@ export function Navbar({ setSearchQuery, setType, selectedType } : NavbarProps) 
 
     async function getUserData() {
         try{
-            await axios.get(`${import.meta.env.VITE_API_URL}user/me/${user.id}`,
+            await axios.get(`${import.meta.env.VITE_API_URL}user/me`,
                 {
                     headers: {
                         Authorization: `Bearer ${user.token}`,

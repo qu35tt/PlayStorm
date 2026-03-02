@@ -39,7 +39,7 @@ export function ProfileSettings(){
                 return;
             }
 
-           axios.put(`${import.meta.env.VITE_API_URL}user/update/${user.userId}`, {
+           axios.put(`${import.meta.env.VITE_API_URL}user/update`, {
                 email: data.email ? data.email : userData.email,
                 username: data.username ? data.username : userData.username,
                 password: data.password
@@ -99,7 +99,7 @@ export function ProfileSettings(){
         formData.append("file", file, file.name);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}user/upload/${user.userId}`, formData, { headers: { Authorization: `Bearer ${user.token}` } });
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}user/upload`, formData, { headers: { Authorization: `Bearer ${user.token}` } });
             user_.setUser(response.data);
             window.location.reload();
             toast.success("Avatar uploaded Succesfully");

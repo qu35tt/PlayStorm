@@ -44,9 +44,9 @@ export const useProfileData = () => {
     const user = useUserStore();
 
     return useQuery({
-        queryKey: ["profile-data", user.userId],
+        queryKey: ["profile-data", user.id],
         queryFn: async () => {
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}user/me/${user.userId}`, {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}user/me`, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
             return data;
