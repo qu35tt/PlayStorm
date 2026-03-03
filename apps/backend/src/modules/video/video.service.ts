@@ -285,7 +285,7 @@ export class VideoService {
             let saved;
 
             if (existing) {
-                saved = await this.prisma.watchProgress.upsert({
+                saved = await this.prisma.watchProgress.update({
                     where: { id: existing.id },
                     data: { 
                         last_position: BigInt(position), 

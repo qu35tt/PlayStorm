@@ -134,7 +134,7 @@ export const SocketEventHandler = () => {
       console.log("Room is ready!");
       usePartyStore.getState().setRoomBuffering(false);
 
-      const player = usePartyStore.getState().player;
+      // const player = usePartyStore.getState().player;
       // We don't force play here, we just allow it. 
       // Actually, it's better to stay paused until someone clicks play OR if we were playing before.
     };
