@@ -34,9 +34,10 @@ export interface ClientToServerEvents {
   leaveParty: (roomId: string) => void;
   startPlayback: (data: PlaybackData) => void;
   playbackAction: (action: PlayerAction) => void;
+  endPlayback: () => void;
+  bufferingStatus: (isBuffering: boolean) => void;
   syncState: (data: SyncState) => void;
   kickUser: (usereId: string) => void;
-  endPlayback: (roomId: string) => void;
 }
 
 export interface ServerToClientEvents {
@@ -47,6 +48,8 @@ export interface ServerToClientEvents {
   startPlayback: (payload?: { videoId: string }) => void;
   syncPlayback: (payload: PlayerAction & { isHeartbeat?: boolean }) => void;
   applySyncState: (payload: { time: number; isPlaying: boolean; sentAt: number }) => void;
+  roomBuffering: (payload: { bufferingCount: number, totalCount: number }) => void;
+  roomReady: () => void;
   endPlayback: () => void;
   roomNotFound: () => void;
   kicked: () => void;

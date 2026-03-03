@@ -1,9 +1,9 @@
 import { useState } from "react"
-import { LoginForm } from "../components/LoginForm"
-import { RegisterForm } from "../components/RegisterForm";
-import { Rain } from "@/components/Rain"
+import { LoginForm } from "../components/login-form"
+import { RegisterForm } from "../components/register-form";
+import { Rain } from "@/components/rain"
 import { useUser } from "@/context/user-context";
-import { useUserStore } from '@/stores/userStore'
+import { useUserStore } from '@/stores/user-store'
 
 export function Login() {
     const[isLogging, setIsLogging] = useState(true);

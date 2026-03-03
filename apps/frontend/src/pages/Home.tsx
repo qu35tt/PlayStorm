@@ -1,5 +1,5 @@
-import { Navbar } from "../components/Navbar"
-import { Footer } from "../components/Footer"
+import { Navbar } from "../components/navbar"
+import { Footer } from "../components/footer"
 import { Outlet } from "react-router"
 import { ModalProvider } from "../providers/modal-provider"
 import { useState } from "react"

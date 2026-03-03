@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator"
 import { Button } from "../ui/button"
 import { Input } from "@/components/ui/input"
-import { useUserStore } from "@/stores/userStore"
+import { useUserStore } from "@/stores/user-store"
 import { useState, type ChangeEvent } from "react"
 import axios from "axios"
 import { ShieldAlert } from "lucide-react"
@@ -46,7 +46,7 @@ export function ProfileSettings(){
            }, { headers: { Authorization: `Bearer ${user.token}` } })
            .then(function (response){
                 toast.success("Data Updated Succesfully!")
-                queryClient.invalidateQueries({ queryKey: ["profile-data", user.userId] });
+                queryClient.invalidateQueries({ queryKey: ["profile-data", user.id] });
                 user_.setUser(response.data);
                 window.location.reload();
            })

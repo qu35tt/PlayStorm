@@ -4,9 +4,9 @@ import type {
   PartyUser,
   PlayerAction,
 } from '../types/socket-types';
-import { socket } from '../lib/SocketInstance';
+import { socket } from '../lib/socket-instance';
 import { MediaPlayerInstance } from '@vidstack/react';
-import { useUserStore } from './userStore';
+import { useUserStore } from './user-store';
 
 export type PartyStore = {
   isConnected: boolean;

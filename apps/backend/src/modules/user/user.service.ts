@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, Req } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, Req, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserDataDto } from './dto';
 import { createClient } from "@supabase/supabase-js"
@@ -11,9 +11,11 @@ const supabase = createClient(
 
 @Injectable()
 export class UserService {
+    private readonly logger = new Logger(UserService.name);
     constructor(private prisma: PrismaService) {}
 
     async getUser(id: string) {
+        this.logger.log(`Fetching user profile for: ${id}`);
         try{
             const user = await this.prisma.user.findUnique({
                 where: {
@@ -26,16 +28,23 @@ export class UserService {
                 }
             })
 
-            if(!user) throw new NotFoundException("User with this id does not exist")
+            if(!user) {
+                this.logger.warn(`User profile not found for: ${id}`);
+                throw new NotFoundException("User with this id does not exist")
+            }
 
             return user;
         }
         catch(err){
-            throw new InternalServerErrorException(err)
+            if (!(err instanceof NotFoundException)) {
+                this.logger.error(`Error fetching user profile for ${id}: ${err.message}`);
+            }
+            throw err;
         }
     }
 
     async updateUser(dto: UserDataDto, id: string){
+        this.logger.log(`Updating user profile for: ${id}`);
         try{
             let hash: string | undefined;
             if(dto.password){ 
@@ -56,11 +65,13 @@ export class UserService {
             return updateUser;
         }
         catch(err){
+            this.logger.error(`Error updating user profile for ${id}: ${err.message}`);
             throw new InternalServerErrorException(err);
         }
     }
 
     async uploadAvatar(id: string, file: Express.Multer.File) {
+    this.logger.log(`Uploading avatar for user: ${id}`);
     try {
         if (!file) throw new InternalServerErrorException("No file provided");
 
@@ -81,7 +92,10 @@ export class UserService {
             cacheControl: "0",
             upsert: true, // 👈 safely replaces old file if exists
         });
-        if (error) throw new InternalServerErrorException(error.message);
+        if (error) {
+            this.logger.error(`Supabase upload error for ${id}: ${error.message}`);
+            throw new InternalServerErrorException(error.message);
+        }
 
         // --- Get public URL ---
         const { data: publicUrlData } = supabase.storage
@@ -98,8 +112,10 @@ export class UserService {
         select: { avatarUrl: true, username: true },
         });
 
+        this.logger.log(`Avatar updated successfully for user: ${id}`);
         return updatedUser;
         } catch (err) {
+            this.logger.error(`Error uploading avatar for user ${id}: ${err.message || err}`);
             throw new InternalServerErrorException(err.message || err);
         }
     }

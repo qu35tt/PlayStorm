@@ -5,6 +5,7 @@ export type VideoData = {
     name: string
     length: number,
     banner: string,
+    thumbnail: string
     description: string,
     genre_id: number
     createdAt: Date
@@ -25,10 +26,6 @@ export type OutletContext = {
     searchQuery: string;
     titles: Titles[];
 }
-
-export type VideoControlsProps = {
-  name: string;
-};
 
 export type CardProps = {
     videoData: VideoData

@@ -1,12 +1,12 @@
-import { VideoCard } from "@/components/VideoCard"
+import { VideoCard } from "@/components/video-card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
-import { Banner } from "./Banner"
+import { Banner } from "./banner"
 import { VideoModal } from "./modals/video-modal"
 import { useOutletContext } from "react-router"
 import { ChevronRight, ChevronLeft, } from "lucide-react"
 import { useRef } from "react"
-import { StartPartyButton } from "./startPartyButton";
+import { StartPartyButton } from "./start-party-button";
 import type { VideoData, OutletContext } from "@/types/video-data-types"
 import { GENRE_MAP } from "@/configs/genreMap"
 import { useRecommendations } from "@/lib/query-client"

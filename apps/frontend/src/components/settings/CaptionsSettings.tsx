@@ -1,4 +1,4 @@
-import { useCaptionStore } from "@/stores/captionsStore"
+import { useCaptionStore } from "@/stores/captions-store"
 
 import { Button } from "@/components/ui/button"
 import {

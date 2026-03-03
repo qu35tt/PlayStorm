@@ -8,7 +8,7 @@ import { VideoModule } from './modules/video/video.module';
 import { PartyModule } from './gateways/party.module';
 
 @Module({
-  imports: [VideoModule ,AuthModule, UserModule, PrismaModule, PartyModule],
+  imports: [VideoModule ,AuthModule, UserModule, PrismaModule, PartyModule,],
   controllers: [AppController],
   providers: [AppService],
 })

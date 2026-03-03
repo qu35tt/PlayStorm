@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, StreamableFile } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, StreamableFile, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SaveProgressDto } from './dto/save-progress.dto';
 import * as fs from 'fs';
@@ -8,9 +8,11 @@ import { access, constants } from 'fs/promises';
 
 @Injectable()
 export class VideoService {
+    private readonly logger = new Logger(VideoService.name);
     constructor(private prisma: PrismaService) {}
 
     async getVideos() {
+        this.logger.log('Fetching all videos');
         // ... (keeping getVideos logic)
         try{
             const videos = await this.prisma.video.findMany({
@@ -39,11 +41,13 @@ export class VideoService {
             }));
         }
         catch(err){
+            this.logger.error(`Failed to fetch videos: ${err.message}`);
             throw new InternalServerErrorException(err)
         }
     }
 
     async streamVideo(id: string, filename: string): Promise<StreamableFile> {
+        this.logger.log(`Streaming video: ${id} file: ${filename}`);
         try {
             const baseDir = path.join(process.cwd(), 'saved_videos', id);
 
@@ -51,6 +55,7 @@ export class VideoService {
             try {
                 await access(baseDir, constants.F_OK);
             } catch {
+                this.logger.warn(`Stream directory for ID ${id} not found.`);
                 throw new NotFoundException(`Stream directory for ID ${id} not found.`);
             }
 
@@ -71,13 +76,14 @@ export class VideoService {
             try {
                 await access(requestedFile, constants.F_OK);
             } catch {
+                this.logger.warn(`File ${filename} not found in stream folder.`);
                 throw new NotFoundException(`File ${filename} not found in stream folder.`);
             }
 
             const fileStream = createReadStream(requestedFile);
             
             fileStream.on('error', (error) => {
-                console.error(`Stream error for file ${requestedFile}:`, error);
+                this.logger.error(`Stream error for file ${requestedFile}:`, error);
             });
 
             const contentType = filename.endsWith('.m3u8') ? 'application/vnd.apple.mpegurl' : 'video/mp2t';
@@ -87,11 +93,13 @@ export class VideoService {
             if (err instanceof NotFoundException) {
                 throw err;
             }
+            this.logger.error(`Streaming error: ${err.message}`);
             throw new InternalServerErrorException(err.message || "Streaming error");
         }
     }
 
     async getVideoData(id: string, userId: string) {
+        this.logger.log(`Fetching data for video: ${id} user: ${userId}`);
         try {
             // 1. Try to find if the ID belongs to an Episode
             const episode = await this.prisma.episode.findUnique({
@@ -196,7 +204,10 @@ export class VideoService {
                 }
             });
    
-            if (!video) throw new NotFoundException("Content not found");
+            if (!video) {
+                this.logger.warn(`Content not found: ${id}`);
+                throw new NotFoundException("Content not found");
+            }
    
             return {
                 ...video,
@@ -217,12 +228,14 @@ export class VideoService {
             };
         } catch (err) {
             if (err instanceof NotFoundException) throw err;
+            this.logger.error(`Error fetching video data: ${err.message}`);
             throw new InternalServerErrorException(err);
         }
     }
 
 
     async getVideoProgress(userId: string, contentId: string) {
+        this.logger.log(`Fetching progress for content: ${contentId} user: ${userId}`);
         try {
             const progress = await this.prisma.watchProgress.findFirst({
                 where: { 
@@ -245,11 +258,13 @@ export class VideoService {
                 last_position: Number(progress.last_position) // Convert BigInt to Number for JSON
             };
         } catch (err) {
+            this.logger.error(`Error fetching progress: ${err.message}`);
             throw new InternalServerErrorException(err);
         }
     }
 
     async saveProgress(userId: string, dto: SaveProgressDto) {
+        this.logger.log(`Saving progress for user: ${userId} content: ${dto.videoId || dto.episodeId}`);
         try {
             const { videoId, episodeId, position, isFinished } = dto;
 
@@ -270,7 +285,7 @@ export class VideoService {
             let saved;
 
             if (existing) {
-                saved = await this.prisma.watchProgress.update({
+                saved = await this.prisma.watchProgress.upsert({
                     where: { id: existing.id },
                     data: { 
                         last_position: BigInt(position), 
@@ -300,12 +315,13 @@ export class VideoService {
             };
 
         } catch (err) {
-            console.error(err);
+            this.logger.error(`Error saving progress: ${err.message}`);
             throw new InternalServerErrorException(err);
         }
     }
 
     async getRandomVideo(){
+        this.logger.log('Fetching random video');
         try{
             const count = await this.prisma.video.count();
             if (count === 0) throw new NotFoundException('No videos found');
@@ -326,22 +342,26 @@ export class VideoService {
             return video;
         }
         catch(err){
+            this.logger.error(`Error fetching random video: ${err.message}`);
             throw new InternalServerErrorException(err)
         }
     }
 
     async getAllGenres() {
+        this.logger.log('Fetching all genres');
         try {
             const genres = await this.prisma.genre.findMany()
 
             return genres;
         }
         catch(err){
+            this.logger.error(`Error fetching genres: ${err.message}`);
             throw new InternalServerErrorException(err)
         }
     }
 
     async getRecommendations(userId: string) {
+        this.logger.log(`Fetching recommendations for user: ${userId}`);
         try {
             // 1. Find genres user has finished content for
             const finishedProgress = await this.prisma.watchProgress.findMany({
@@ -418,6 +438,7 @@ export class VideoService {
             return recommendations.sort(() => 0.5 - Math.random()).slice(0, 5);
 
         } catch (err) {
+            this.logger.error(`Error fetching recommendations: ${err.message}`);
             throw new InternalServerErrorException(err);
         }
     }

@@ -5,7 +5,7 @@ import { SocketProvider } from "./context/socket-context";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { SocketEventHandler } from "@/components/SocketEventHandler";
+import { SocketEventHandler } from "@/components/socket-event-handler";
 
 
 function App() {

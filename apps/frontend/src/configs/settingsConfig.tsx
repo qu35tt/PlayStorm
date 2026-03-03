@@ -13,9 +13,4 @@ export const settingsConfig = {
         icon: Captions,
         component: CaptionsSettings
     },
-    // party: {
-    //     name: "Party",
-    //     icon: PartyPopper,
-    //     component: PartySettings
-    // }
 }

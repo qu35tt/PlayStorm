@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "./ui/button";
 import { Play } from "lucide-react";
 import axios from "axios"
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore } from "@/stores/user-store";
 import { useModal } from "@/hooks/use-modal-store";
 import type { VideoData } from "@/types/video-data-types";
 

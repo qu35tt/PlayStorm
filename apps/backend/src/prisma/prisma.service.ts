@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 require('dotenv').config()
 
 @Injectable()
-export class PrismaService extends PrismaClient {
+export class PrismaService extends PrismaClient implements OnModuleInit {
+    private readonly logger = new Logger(PrismaService.name);
     constructor() {
         super({
             datasources: {
@@ -12,5 +13,14 @@ export class PrismaService extends PrismaClient {
                 }
             }
         })
+    }
+
+    async onModuleInit() {
+        try {
+            await this.$connect();
+            this.logger.log('Database connected successfully');
+        } catch (err) {
+            this.logger.error(`Database connection failed: ${err.message}`);
+        }
     }
 }

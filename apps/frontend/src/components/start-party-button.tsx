@@ -1,4 +1,4 @@
-import { usePartyStore } from "@/stores/partyStore";
+import { usePartyStore } from "@/stores/party-store";
 import { useModal } from "../hooks/use-modal-store";
 import { Button } from "./ui/button";
 import { Globe, GlobeLock } from "lucide-react";

@@ -1,12 +1,12 @@
-import { usePartyStore } from '@/stores/partyStore';
+import { usePartyStore } from '@/stores/party-store';
 import { useModal } from "@/hooks/use-modal-store";
-import { MemberCard } from "../MemberCard";
+import { MemberCard } from "../member-card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "../ui/dialog";
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 import { useUser } from "@/context/user-context";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore } from "@/stores/user-store";
 import { useEffect } from 'react';
 import { useSocket } from "@/context/socket-context";
 import type { PartyUser } from '@/types/socket-types';
@@ -78,7 +78,7 @@ export function PartyModal() {
     useEffect(() => {
       if (!socket) return;
 
-      const handlePartyJoined = (payload?: { members: PartyUser[]; hostId: string }) => {
+      const handlePartyJoined = (payload?: { members: PartyUser[]; state?: { videoId: string, currentTime: number, isPlaying: boolean } }) => {
         if (payload?.members) {
           usePartyStore.setState({ members: payload.members });
         }

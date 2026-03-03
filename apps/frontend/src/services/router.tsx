@@ -1,11 +1,10 @@
 import { createBrowserRouter } from "react-router";
 
-import { Login } from "../pages/Login"
-import { Home } from "../pages/Home"
-import { VideoPlayer } from "../pages/VideoPlayer"
-import { VideoLists } from "../components/VideoLists"
-import { PrivateRoute } from "../lib/PrivateRoute"
-import { SocketEventHandler } from "@/components/SocketEventHandler";
+import { Login } from "../pages/login"
+import { Home } from "../pages/home"
+import { VideoPlayer } from "../pages/video-player"
+import { VideoLists } from "../components/video-lists"
+import { PrivateRoute } from "../lib/private-route"
 
 export const router = createBrowserRouter([
   {
@@ -16,7 +15,6 @@ export const router = createBrowserRouter([
     path: "/home",
     element: (
       <PrivateRoute>
-        <SocketEventHandler />
           <Home />
       </PrivateRoute>
     ),
@@ -25,17 +23,15 @@ export const router = createBrowserRouter([
         index: true,
         element: (
         <>
-          <SocketEventHandler />
           <VideoLists />
         </>
       )},
     ],
   },
   {
-    path: "/watch/:id", // or just "/watch"
+    path: "/watch/:id",
     element: (
       <>
-        <SocketEventHandler />
         <VideoPlayer />
       </>
     )

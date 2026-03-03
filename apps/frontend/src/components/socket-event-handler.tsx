@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSocket } from '@/context/socket-context';
-import { usePartyStore } from '@/stores/partyStore';
+import { usePartyStore } from '@/stores/party-store';
 import { router } from '@/services/router';
 import type { PartyUser, PlayerAction} from '@/types/socket-types';
 

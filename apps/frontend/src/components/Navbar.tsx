@@ -1,6 +1,6 @@
 import { LogOut, Search, Settings } from "lucide-react"
 import { useNavigate } from "react-router";
-import { useUserStore } from '../stores/userStore'
+import { useUserStore } from '../stores/user-store'
 import axios from "axios";
 import { toast } from "sonner"
 import { useSocket } from "@/context/socket-context";

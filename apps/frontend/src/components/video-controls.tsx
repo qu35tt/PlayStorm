@@ -25,19 +25,18 @@ import {
     Captions 
 } from "lucide-react";
 import { useState, useRef, useEffect } from 'react';
-import { usePartyStore } from '@/stores/partyStore';
-import type { VideoControlsProps } from '@/types/video-data-types'
+import { usePartyStore } from '@/stores/party-store';
 import { useNavigate } from 'react-router';
 import { Button } from './ui/button';
-import { invalidateData } from '@/lib/query-client';
+import { invalidateData, useVideoData } from '@/lib/query-client';
 
-export function VideoControls({ name }: VideoControlsProps) {   
+export function VideoControls({id} : {id: string | undefined}) {   
     const player = useMediaPlayer();
     const isPaused = useMediaState('paused');
     const volume = useMediaState('volume');
     const isMuted = useMediaState('muted');
-    const currentTime = useMediaState('currentTime');
-    const duration = useMediaState('duration');
+
+    const name = useVideoData(id).data?.name    
 
     const [showCaptions, setShowCaptions] = useState(false);
     const [showVolume, setShowVolume] = useState(false);
@@ -181,19 +180,19 @@ export function VideoControls({ name }: VideoControlsProps) {
                                 {isPaused ? <Play className='w-7 h-7 fill-white' /> : <Pause className='w-7 h-7 fill-white' />}
                             </PlayButton>
 
-                            <Button 
+                            <SeekButton 
                                 onClick={handleSeekBck} 
                                 className={`group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none bg-transparent hover:bg-white/20 transition-colors ${isInteractionDisabled ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <ArrowLeft className='w-6 h-6'/>
-                            </Button>
+                            </SeekButton>
 
-                            <Button 
+                            <SeekButton 
                                 onClick={handleSeekFrw} 
                                 className={`group relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md outline-none bg-transparent hover:bg-white/20 transition-colors ${isInteractionDisabled ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <ArrowRight className='w-6 h-6'/>
-                            </Button>
+                            </SeekButton>
 
                             <div className="flex items-center gap-2 ml-2 font-mono text-sm">
                                 <Time type="current" />

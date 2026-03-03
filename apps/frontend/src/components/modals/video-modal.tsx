@@ -1,6 +1,6 @@
 import { useModal } from "@/hooks/use-modal-store";
 import { useNavigate } from "react-router"
-import { usePartyStore } from "@/stores/partyStore";
+import { usePartyStore } from "@/stores/party-store";
 import { cn } from "@/lib/utils";
 
 import {

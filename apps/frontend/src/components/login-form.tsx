@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useUserStore } from '../stores/userStore'
+import { useUserStore } from '../stores/user-store'
 
 import { toast } from "sonner"
 

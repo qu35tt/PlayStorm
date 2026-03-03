@@ -4,7 +4,7 @@ export const queryClient = new QueryClient();
 
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useUserStore } from "@/stores/userStore";
+import { useUserStore } from "@/stores/user-store";
 import type { VideoData } from "@/types/video-data-types";
 import type { VideoModalData } from "@/types/video-modal.types";
 

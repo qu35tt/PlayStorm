@@ -1,15 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import fs from 'fs';
 import path from 'path/win32';
 
 @Injectable()
-export class AppService {
-  // onModuleInit() {
-  //   const tempHlsDir = path.join(process.cwd(), 'temp_hls');
+export class AppService implements OnModuleInit {
+  private readonly logger = new Logger(AppService.name);
 
-  //   if(!fs.existsSync(tempHlsDir)) {
-  //     fs.rmSync(tempHlsDir, { recursive: true, force: true });
-  //     console.log('Cleared temp_hls directory');
-  //   }
-  // }
+  onModuleInit() {
+    const tempHlsDir = path.join(process.cwd(), 'temp_hls');
+
+    if(fs.existsSync(tempHlsDir)) {
+      fs.rmSync(tempHlsDir, { recursive: true, force: true });
+      this.logger.log('Cleared temp_hls directory');
+    }
+  }
 }

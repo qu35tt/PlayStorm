@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DisconnectResult ,PartyUser } from './dto'
 
 @Injectable()
 export class RoomManagementService {
+    private readonly logger = new Logger(RoomManagementService.name);
     private rooms = new Map<string, { users: Map<string, PartyUser> }>();
 
     private socketToRoom = new Map<string, {roomId: string, user: PartyUser}>();
@@ -12,9 +13,11 @@ export class RoomManagementService {
     }
 
     public addUserToRoom(roomId: string, user: PartyUser, socketId: string): PartyUser[] {
+        this.logger.log(`Adding user ${user.username} to room ${roomId}`);
         let room = this.rooms.get(roomId);
 
         if (!room) {
+            this.logger.log(`Room ${roomId} created`);
             room = { users: new Map() };
             this.rooms.set(roomId, room);
         }
@@ -32,6 +35,7 @@ export class RoomManagementService {
         if(!roomData) return null;
 
         const { roomId, user } = roomData;
+        this.logger.log(`Removing user ${user.username} from room ${roomId} via socket ${socketId}`);
 
         const room = this.rooms.get(roomId);
 
@@ -54,6 +58,7 @@ export class RoomManagementService {
         }
 
         if(roomUsers.size === 0) {
+            this.logger.log(`Room ${roomId} empty, deleting`);
             this.rooms.delete(roomId);
         }
 

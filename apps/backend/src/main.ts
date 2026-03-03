@@ -3,7 +3,10 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const isDev = process.env.NODE_ENV !== 'production';
+  const app = await NestFactory.create(AppModule, {
+    logger: isDev ? ['log', 'error', 'warn', 'debug', 'verbose'] : false,
+  });
 
   const config = new DocumentBuilder()
     .setTitle("PlayStorm API")

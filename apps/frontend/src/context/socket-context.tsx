@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
-import { socket } from '../lib/SocketInstance';
+import { socket } from '../lib/socket-instance';
 import type { ServerToClientEvents, ClientToServerEvents } from '../types/socket-types';
-import { usePartyStore } from '@/stores/partyStore';
-import { useUserStore } from '@/stores/userStore';
+import { usePartyStore } from '@/stores/party-store';
+import { useUserStore } from '@/stores/user-store';
 
 // Define the typed socket
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -30,7 +30,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       const onConnect = () => {
         socket.emit('joinParty', { ...user, roomId } as any);
-        socket.emit('requestSync');
       };
 
       const onRoomNotFound = () => {

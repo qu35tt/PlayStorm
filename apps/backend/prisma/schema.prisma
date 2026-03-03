@@ -30,7 +30,6 @@ model Video {
   rls_year  Int?
   genre_id  Int
   videotype VideoType
-  favorites Favorites[]
   genre     Genre       @relation(fields: [genre_id], references: [id])
   seasons   Season[]    @relation("VideoToSeason")
   createdAt DateTime @default(now())
@@ -81,19 +80,15 @@ model WatchProgress {
   user          User @relation(fields: [user_id], references: [id], name: "Users progress")
   video         Video? @relation(fields: [video_id], references: [id], name: "Video Progression")
   episode       Episode? @relation(fields: [episode_id], references: [id], name: "Episode Progression")
+
+  @@index([user_id, video_id])
+  @@index([user_id, episode_id])
 }
 
 model Genre {
   id    Int  @id @default(autoincrement())
   name  String
   video Video[]
-}
-
-model Favorites {
-  id       String   @id @default(uuid())
-  video_id String
-  addedAt  DateTime
-  video    Video    @relation(fields: [video_id], references: [id])
 }
 
 enum VideoType {
