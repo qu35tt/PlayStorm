@@ -14,10 +14,11 @@ import { RoomManagementService } from "./room-management.service"
 import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
 
-@WebSocketGateway(80, {
+@WebSocketGateway(6000, {
   namespace: 'Party',
   cors: {
-    origin: '*',
+    origin: ['http://localhost:5173'],
+    credentials: true,
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {

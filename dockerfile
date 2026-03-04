@@ -9,24 +9,33 @@ COPY apps/frontend/package*.json ./frontend/
 FROM base AS backend-builder
 WORKDIR /app/backend
 
-COPY /apps/backend .
-COPY /apps/backend/.env .
+COPY apps/backend .
+COPY apps/backend/.env .
 
 RUN npm install
 
 RUN npx prisma generate --schema=./prisma/schema.prisma
 RUN npm run build
 
-# FROM base AS frontend-builder
+FROM base AS frontend-builder
+WORKDIR /app/frontend
 
-# COPY apps/frontend ./frontend
-# COPY apps/frontend/*.env /frontend/
+COPY apps/frontend .
+COPY apps/frontend/*.env .
 
-# RUN npm run build
+RUN npm install
+RUN npm run build
 
 FROM backend-builder AS backend
 WORKDIR /app/backend
 ENV NODE_ENV=production
 
 EXPOSE 4000
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "dist/main"]
+
+FROM nginx:alpine  AS frontend
+WORKDIR /app/frontend
+
+COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
+
+EXPOSE 80

@@ -50,7 +50,7 @@ export class VideoService {
         this.logger.log(`Streaming video: ${id} file: ${filename}`);
         try {
             const baseDir = path.join(process.cwd(), 'saved_videos', id);
-
+            this.logger.log(`Stream directory for ID ${id}: ${baseDir}`);
             // Check if directory exists
             try {
                 await access(baseDir, constants.F_OK);
