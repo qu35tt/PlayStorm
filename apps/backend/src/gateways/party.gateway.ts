@@ -27,6 +27,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // Track room playback state: { [roomId]: { videoId: string, currentTime: number, isPlaying: boolean } }
   private roomStates = new Map<string, { videoId: string, currentTime: number, isPlaying: boolean }>();
 
+  // Track active sockets for each user: { [userId]: Set<socketId> }
+  private userSockets = new Map<string, Set<string>>();
+
   constructor(
     private readonly roomService: RoomManagementService,
     private readonly jwtService: JwtService
@@ -35,14 +38,41 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: Socket) {
+  async handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
+    
+    try {
+      const token = client.handshake.headers.authorization?.split(' ')[1];
+      if (token) {
+        const payload = await this.jwtService.verifyAsync(token);
+        if (payload && payload.sub) {
+          const userId = payload.sub;
+          client.data.userId = userId;
+          
+          if (!this.userSockets.has(userId)) {
+            this.userSockets.set(userId, new Set());
+          }
+          this.userSockets.get(userId).add(client.id);
+          this.logger.log(`User ${userId} associated with socket ${client.id}`);
+        }
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to authenticate socket connection: ${err.message}`);
+    }
   }
-
-  private async validateToken(client: Socket) {}
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+
+    // Remove from user tracking
+    const userId = client.data.userId;
+    if (userId && this.userSockets.has(userId)) {
+      const sockets = this.userSockets.get(userId);
+      sockets.delete(client.id);
+      if (sockets.size === 0) {
+        this.userSockets.delete(userId);
+      }
+    }
 
     const result = this.roomService.removeUserBySocketId(client.id);
     if (!result) return;
@@ -50,6 +80,21 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { roomId, user: userInfo } = result;
 
     client.to(roomId).emit('userLeft', { userInfo });
+  }
+
+  /**
+   * Forces logout for a specific user by emitting 'forcedLogout' to all their sockets.
+   */
+  async forceLogout(userId: string) {
+    const socketIds = this.userSockets.get(userId);
+    if (socketIds && socketIds.size > 0) {
+      this.logger.log(`Forcing logout for user ${userId} on ${socketIds.size} sockets`);
+      for (const socketId of socketIds) {
+        this.server.to(socketId).emit('forcedLogout', {
+          message: 'User with this credentials is already logged in.'
+        });
+      }
+    }
   }
 
 

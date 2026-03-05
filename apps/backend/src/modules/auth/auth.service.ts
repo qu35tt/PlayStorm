@@ -3,11 +3,16 @@ import { LoginDto, LogoutDto, RegisterDto } from './dto';
 import { PrismaService } from "src/prisma/prisma.service";
 const argon = require('argon2');
 import { JwtService } from '@nestjs/jwt';
+import { EventsGateway } from 'src/gateways/party.gateway';
 
 @Injectable()
 export class AuthService {
     private readonly logger = new Logger(AuthService.name);
-    constructor(private prisma: PrismaService, private jwt: JwtService) {}
+    constructor(
+        private prisma: PrismaService, 
+        private jwt: JwtService,
+        private eventsGateway: EventsGateway
+    ) {}
 
     async register(dto: RegisterDto){
         this.logger.log(`Registering user: ${dto.username}`);
@@ -55,6 +60,9 @@ export class AuthService {
                 throw new UnauthorizedException("Invalid credentials") 
             }
             
+            // Force logout from other devices before updating token version
+            await this.eventsGateway.forceLogout(user.id);
+
             const updatedUser = await this.prisma.user.update({
                 where: { id: user.id },
                 data: { tokenVersion: { increment: 1 } }

@@ -53,4 +53,5 @@ export interface ServerToClientEvents {
   endPlayback: () => void;
   roomNotFound: () => void;
   kicked: () => void;
-}
+  forcedLogout: (payload: { message: string }) => void;
+  }

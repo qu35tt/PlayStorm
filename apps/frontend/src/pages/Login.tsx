@@ -2,18 +2,13 @@ import { useState } from "react"
 import { LoginForm } from "../components/login-form"
 import { RegisterForm } from "../components/register-form";
 import { Rain } from "@/components/rain"
-import { useUser } from "@/context/user-context";
-import { useUserStore } from '@/stores/user-store'
 
 export function Login() {
     const[isLogging, setIsLogging] = useState(true);
-    const user = useUserStore()
-    const { clearUser }= useUser();
 
     function resetData(){
-        user.clearId();
-        user.clearToken();
-        clearUser();
+        localStorage.clear()
+        sessionStorage.clear()
     }
 
     return(

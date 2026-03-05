@@ -1,11 +1,15 @@
 import { useEffect } from 'react';
 import { useSocket } from '@/context/socket-context';
 import { usePartyStore } from '@/stores/party-store';
+import { useUserStore } from '@/stores/user-store';
 import { router } from '@/services/router';
 import type { PartyUser, PlayerAction} from '@/types/socket-types';
+import { toast } from "sonner";
 
 export const SocketEventHandler = () => {
   const socket = useSocket();
+  const clearId = useUserStore((state) => state.clearId);
+  const clearToken = useUserStore((state) => state.clearToken);
   
   useEffect(() => {
     if (!socket) return;
@@ -18,6 +22,29 @@ export const SocketEventHandler = () => {
     const onDisconnect = (reason: any) => {
       usePartyStore.getState().setIsConnected(false);
       usePartyStore.getState().setError(`Disconnected: ${reason}`);
+    };
+
+    const onForcedLogout = (payload: { message: string }) => {
+      console.log("Forced logout event received:", payload);
+      
+      // 1. Show toast
+      toast.error(payload.message, {
+        duration: 5000,
+      });
+
+      // 2. Clear stores
+      clearId();
+      clearToken();
+      usePartyStore.setState({
+        roomId: null,
+        members: [],
+        videoId: null,
+        player: null,
+        user: null
+      });
+
+      // 3. Navigate to login
+      router.navigate('/');
     };
 
     const onPartyCreated = (payload: { roomId: string }) => {
@@ -141,6 +168,7 @@ export const SocketEventHandler = () => {
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
+    socket.on('forcedLogout', onForcedLogout);
     socket.on('partyCreated', onPartyCreated);
     socket.on('partyJoined', onPartyJoined);
     socket.on('newUserJoined', onNewUserJoined);
@@ -154,6 +182,7 @@ export const SocketEventHandler = () => {
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
+      socket.off('forcedLogout', onForcedLogout);
       socket.off('partyCreated', onPartyCreated);
       socket.off('partyJoined', onPartyJoined);
       socket.off('newUserJoined', onNewUserJoined);

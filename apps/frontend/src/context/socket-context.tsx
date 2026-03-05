@@ -18,18 +18,18 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const token = useUserStore((state) => state.token);
 
     useEffect(() => {
-    if (user && roomId) {
+    if (token) {
       if (!socket.connected) {
-        if (token) {
-          socket.io.opts.extraHeaders = {
-            Authorization: `Bearer ${token}`,
-          };
-        }
+        socket.io.opts.extraHeaders = {
+          Authorization: `Bearer ${token}`,
+        };
         socket.connect();
       }
 
       const onConnect = () => {
-        socket.emit('joinParty', { ...user, roomId } as any);
+        if (user && roomId) {
+          socket.emit('joinParty', { ...user, roomId } as any);
+        }
       };
 
       const onRoomNotFound = () => {
@@ -39,7 +39,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       socket.on('connect', onConnect);
       socket.on('roomNotFound', onRoomNotFound);
 
-      if (socket.connected) {
+      if (socket.connected && user && roomId) {
         onConnect();
       }
 
@@ -47,6 +47,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         socket.off('connect', onConnect);
         socket.off('roomNotFound', onRoomNotFound);
       };
+    } else {
+      if (socket.connected) {
+        socket.disconnect();
+      }
     }
   }, [user, roomId, token]);
   
