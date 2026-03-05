@@ -5,30 +5,49 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from "@nestjs/jwt";
-require("dotenv")
+import { ConfigService } from '@nestjs/config';
+import { PrismaService } from "src/prisma/prisma.service";
 
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    constructor(private jwt: JwtService) {}
+    constructor(
+        private jwt: JwtService,
+        private prisma: PrismaService,
+        private config: ConfigService
+    ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean>  {
         const request = context.switchToHttp().getRequest();
         const token = this.extractTokenFromHeader(request);
         if (!token) {
-        throw new UnauthorizedException();
+            throw new UnauthorizedException();
         }
+        
+        let payload;
         try {
-        const payload = await this.jwt.verifyAsync(
+            payload = await this.jwt.verifyAsync(
             token,
             {
-            secret: process.env.JWT_SECRET
+                secret: this.config.getOrThrow('JWT_SECRET')
             }
-        );
-        request['user'] = payload;
+            );
         } catch {
             throw new UnauthorizedException();
         }
+        
+        if (payload.sub && payload.version !== undefined) {
+            const user = await this.prisma.user.findUnique({
+                where: { id: payload.sub },
+                select: { tokenVersion: true }
+            });
+
+            if (!user || user.tokenVersion !== payload.version) {
+                throw new UnauthorizedException("Session invalidated (logged in on another device)");
+            }
+        }
+
+        request['user'] = payload;
         return true;
     }
 

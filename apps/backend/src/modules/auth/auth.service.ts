@@ -22,7 +22,7 @@ export class AuthService {
                 }
             })
 
-            const payload = { sub: user.id, username: user.username };
+            const payload = { sub: user.id, username: user.username, version: user.tokenVersion };
 
             const access_token = await this.jwt.signAsync(payload, { expiresIn: "30d" });
 
@@ -54,12 +54,21 @@ export class AuthService {
                 this.logger.warn(`Invalid credentials for: ${dto.email}`);
                 throw new UnauthorizedException("Invalid credentials") 
             }
+            
+            const updatedUser = await this.prisma.user.update({
+                where: { id: user.id },
+                data: { tokenVersion: { increment: 1 } }
+            });
 
-            const payload = { sub: user.id, username: user.username };
+            const payload = { 
+                sub: updatedUser.id, 
+                username: updatedUser.username, 
+                version: updatedUser.tokenVersion 
+            };
 
             const access_token = await this.jwt.signAsync(payload);
 
-            const id = user.id
+            const id = updatedUser.id
 
             return { id, access_token };
         }

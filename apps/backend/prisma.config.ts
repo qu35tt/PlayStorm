@@ -13,6 +13,6 @@ export default defineConfig({
 
   datasource: {
     // Passes the URL from your .env to the Prisma CLI
-    url: env('DATABASE_URL'),
+    url: env('DIRECT_URL'),
   },
 });

@@ -36,6 +36,7 @@ CMD ["node", "dist/main"]
 FROM nginx:alpine  AS frontend
 WORKDIR /app/frontend
 
+COPY apps/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 
 EXPOSE 80

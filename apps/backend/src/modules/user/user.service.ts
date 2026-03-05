@@ -2,17 +2,22 @@ import { Injectable, InternalServerErrorException, NotFoundException, Req, Logge
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserDataDto } from './dto';
 import { createClient } from "@supabase/supabase-js"
+import { ConfigModule } from '@nestjs/config';
 const argon = require('argon2');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
-);
 
 @Injectable()
 export class UserService {
     private readonly logger = new Logger(UserService.name);
-    constructor(private prisma: PrismaService) {}
+    private readonly supabase;
+
+    constructor(private prisma: PrismaService) {
+        ConfigModule.forRoot()
+        this.supabase = createClient(
+            process.env.SUPABASE_URL!,
+            process.env.SUPABASE_KEY!
+        );
+    }
 
     async getUser(id: string) {
         this.logger.log(`Fetching user profile for: ${id}`);
@@ -85,7 +90,7 @@ export class UserService {
         const contentType = file.mimetype;
 
         // --- Upload (safe overwrite) ---
-        const { data, error } = await supabase.storage
+        const { data, error } = await this.supabase.storage
         .from(bucket)
         .upload(filePath, file.buffer, {
             contentType,
@@ -98,7 +103,7 @@ export class UserService {
         }
 
         // --- Get public URL ---
-        const { data: publicUrlData } = supabase.storage
+        const { data: publicUrlData } = this.supabase.storage
         .from(bucket)
         .getPublicUrl(filePath);
 

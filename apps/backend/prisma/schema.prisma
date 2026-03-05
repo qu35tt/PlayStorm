@@ -3,93 +3,84 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 model User {
-  id           String         @id @default(uuid())
-  username     String
-  password     String
-  email        String         @unique
-  createdAt    DateTime       @default(now())
-  lastUpdate   DateTime       @updatedAt
-  avatarUrl    String?
-
+  id            String          @id @default(uuid())
+  username      String
+  password      String
+  email         String          @unique
+  createdAt     DateTime        @default(now())
+  lastUpdate    DateTime        @updatedAt
+  avatarUrl     String?
+  tokenVersion  Int             @default(0)
   watchProgress WatchProgress[] @relation("Users progress")
 }
 
 model Video {
-  id        String      @id @default(uuid())
-  name      String
-  description String?
-  length    Int?
-  thumbnail String
-  banner    String
-  rls_year  Int?
-  genre_id  Int
-  videotype VideoType
-  genre     Genre       @relation(fields: [genre_id], references: [id])
-  seasons   Season[]    @relation("VideoToSeason")
-  createdAt DateTime @default(now())
-
+  id            String          @id @default(uuid())
+  name          String
+  length        Int?
+  thumbnail     String
+  banner        String
+  videotype     VideoType
+  description   String?
+  rls_year      Int?
+  genre_id      Int
+  createdAt     DateTime        @default(now())
+  seasons       Season[]        @relation("VideoToSeason")
+  genre         Genre           @relation(fields: [genre_id], references: [id])
   watchProgress WatchProgress[] @relation("Video Progression")
 }
 
-model Season { 
-  id String @id @default(uuid())
-  name String
-  number Int
-
-  videoId String
-  video Video @relation(fields: [videoId], references: [id], name: "VideoToSeason")
-
-  episodes Episode[] @relation("Episodes Season ")
-
-  createdAt DateTime @default(now())
-  lastUpdate DateTime @updatedAt @default(now())
+model Season {
+  id         String    @id @default(uuid())
+  name       String
+  number     Int
+  videoId    String
+  createdAt  DateTime  @default(now())
+  lastUpdate DateTime  @default(now()) @updatedAt
+  episodes   Episode[] @relation("Episodes Season ")
+  video      Video     @relation("VideoToSeason", fields: [videoId], references: [id])
 }
 
 model Episode {
-  id            String   @id @default(uuid())
+  id            String          @id @default(uuid())
   title         String
   description   String?
   number        Int
-  
-  length        Int      
+  length        Int
   thumbnail     String?
-  
   season_id     String
-  season        Season   @relation(fields: [season_id], references: [id], onDelete: Cascade, name: "Episodes Season ")
-  
-  createdAt     DateTime @default(now())
-
+  createdAt     DateTime        @default(now())
+  season        Season          @relation("Episodes Season ", fields: [season_id], references: [id], onDelete: Cascade)
   watchProgress WatchProgress[] @relation("Episode Progression")
 }
 
 model WatchProgress {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   user_id       String
-  video_id      String?
   episode_id    String?
   type          VideoType
   last_position BigInt
   isFinished    Boolean
-
-  user          User @relation(fields: [user_id], references: [id], name: "Users progress")
-  video         Video? @relation(fields: [video_id], references: [id], name: "Video Progression")
-  episode       Episode? @relation(fields: [episode_id], references: [id], name: "Episode Progression")
+  video_id      String?
+  episode       Episode?  @relation("Episode Progression", fields: [episode_id], references: [id])
+  user          User      @relation("Users progress", fields: [user_id], references: [id])
+  video         Video?    @relation("Video Progression", fields: [video_id], references: [id])
 
   @@index([user_id, video_id])
   @@index([user_id, episode_id])
 }
 
 model Genre {
-  id    Int  @id @default(autoincrement())
   name  String
+  id    Int     @id @default(autoincrement())
   video Video[]
 }
 
 enum VideoType {
   MOVIE
-  SERIES 
+  SERIES
 }

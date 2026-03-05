@@ -6,9 +6,14 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { VideoModule } from './modules/video/video.module';
 import { PartyModule } from './gateways/party.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [VideoModule ,AuthModule, UserModule, PrismaModule, PartyModule,],
+  imports: [VideoModule ,AuthModule, UserModule, PrismaModule, PartyModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
