@@ -6,6 +6,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   ConnectedSocket,
+  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from "uuid";
@@ -51,8 +52,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           
           if (!this.userSockets.has(userId)) {
             this.userSockets.set(userId, new Set());
+            this.userSockets.get(userId)?.add(client.id);
           }
-          this.userSockets.get(userId).add(client.id);
+          
           this.logger.log(`User ${userId} associated with socket ${client.id}`);
         }
       }
@@ -68,8 +70,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = client.data.userId;
     if (userId && this.userSockets.has(userId)) {
       const sockets = this.userSockets.get(userId);
-      sockets.delete(client.id);
-      if (sockets.size === 0) {
+      sockets?.delete(client.id);
+      if (sockets?.size === 0) {
         this.userSockets.delete(userId);
       }
     }
@@ -79,7 +81,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const { roomId, user: userInfo } = result;
 
-    client.to(roomId).emit('userLeft', { userInfo });
+    this.server.to(roomId).emit('userLeft', { userInfo });
   }
 
   /**
@@ -97,6 +99,29 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  private async validateToken(client: Socket) {
+    if (client.data.userId) return;
+
+    const token = client.handshake.headers.authorization?.split(' ')[1];
+    if (!token) {
+      client.disconnect();
+      throw new WsException('Unauthorized');
+    }
+
+    try {
+      const payload = await this.jwtService.verifyAsync(token);
+      client.data.userId = payload.sub;
+      
+      const userId = payload.sub;
+      if (!this.userSockets.has(userId)) {
+        this.userSockets.set(userId, new Set());
+      }
+      this.userSockets.get(userId)?.add(client.id);
+    } catch (err) {
+      client.disconnect();
+      throw new WsException('Unauthorized');
+    }
+  }
 
   @SubscribeMessage('createParty')
   async handlePartyCreation(@ConnectedSocket() client: Socket, @MessageBody() user: PartyUser) {
@@ -117,7 +142,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinParty')
   async handlePartyJoin(@ConnectedSocket() client: Socket, @MessageBody() data: JoinParty) {
     this.logger.log(`User ${data.username} joining party: ${data.roomId}`);
-    this.validateToken(client);
+    await this.validateToken(client);
     const { roomId, ...userInfo } = data;
 
     if (!this.roomService.doesRoomExist(roomId)) {
@@ -146,7 +171,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('leaveParty')
   async handlePartyLeave(@ConnectedSocket() client: Socket) {
     this.logger.log(`User leaving party: ${client.id}`);
-    this.validateToken(client);
+    await this.validateToken(client);
     const result = this.roomService.removeUserBySocketId(client.id);
     if (!result) return;
 
@@ -160,7 +185,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('startPlayback')
   async handleStartPlayback(@ConnectedSocket() client: Socket, @MessageBody() data: PlaybackData) {
     this.logger.log(`Starting playback in room: ${client.data.roomId} for video: ${data.videoId}`);
-    this.validateToken(client);
+    await this.validateToken(client);
     let roomId = client.data.roomId;
     if (!roomId) return;
 
@@ -172,7 +197,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('playbackAction')
   async handlePlaybackAction(@ConnectedSocket() client: Socket, @MessageBody() action: any) {
     this.logger.log(`Playback action in room: ${client.data.roomId} action: ${action.action}`);
-    this.validateToken(client);
+    await this.validateToken(client);
     const roomId = client.data.roomId;
     if (!roomId) return;
 
@@ -189,7 +214,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('syncState')
   async handleSyncState(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
-    this.validateToken(client);
+    await this.validateToken(client);
     const roomId = client.data.roomId;
     if (!roomId) return;
 
@@ -209,7 +234,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('endPlayback') 
   async handleEndPlayback(@ConnectedSocket() client: Socket) {
     this.logger.log(`Ending playback in room: ${client.data.roomId}`);
-    this.validateToken(client);
+    await this.validateToken(client);
     let roomId = client.data.roomId;
     if (!roomId) return;
 

@@ -10,7 +10,7 @@ FROM base AS backend-builder
 WORKDIR /app/backend
 
 COPY apps/backend .
-COPY apps/backend/.env .
+COPY apps/backend/*.env .
 
 RUN npm install
 
