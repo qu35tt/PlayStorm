@@ -1,8 +1,8 @@
 import { VideoCard } from "@/components/video-card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
-import { Banner } from "./banner"
-import { VideoModal } from "./modals/video-modal"
+import { Banner } from "@/components/banner"
+import { VideoModal } from "@/components/modals/video-modal"
 import { useOutletContext } from "react-router"
 import { ChevronRight, ChevronLeft, } from "lucide-react"
 import { useRef } from "react"

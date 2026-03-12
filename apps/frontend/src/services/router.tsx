@@ -1,10 +1,10 @@
 import { createBrowserRouter } from "react-router";
 
-import { Login } from "../pages/login"
-import { Home } from "../pages/home"
-import { VideoPlayer } from "../pages/video-player"
-import { VideoLists } from "../components/video-lists"
-import { PrivateRoute } from "../lib/private-route"
+import { Login } from "@/pages/login"
+import { Home } from "@/pages/home"
+import { VideoPlayer } from "@/pages/video-player"
+import { VideoLists } from "@/components/video-lists"
+import { PrivateRoute } from "@/lib/private-route"
 
 export const router = createBrowserRouter([
   {
