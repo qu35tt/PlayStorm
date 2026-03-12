@@ -132,6 +132,17 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       createParty: () => {
         return new Promise<void>((resolve, reject) => {
           const { user } = get();
+          const token = localStorage.getItem('access_token');
+          
+          if (!token) {
+            console.error('No token found in localStorage during createParty');
+            useUserStore.getState().clearToken();
+            useUserStore.getState().clearId();
+            socket.disconnect();
+            reject(new Error('Unauthorized'));
+            return;
+          }
+
           if (socket.connected && user) {
             socket.emit('createParty', user);
             resolve();
@@ -144,6 +155,17 @@ export const usePartyStore = create<PartyStore, [["zustand/persist", PersistedDa
       joinParty: (roomId) => {
         return new Promise<void>((resolve, reject) => {
           const { user } = get();
+          const token = localStorage.getItem('access_token');
+          
+          if (!token) {
+            console.error('No token found in localStorage during joinParty');
+            useUserStore.getState().clearToken();
+            useUserStore.getState().clearId();
+            socket.disconnect();
+            reject(new Error('Unauthorized'));
+            return;
+          }
+
           if (socket.connected && user && user.id) {
             socket.emit('joinParty', { ...user, roomId });
             set({ roomId });

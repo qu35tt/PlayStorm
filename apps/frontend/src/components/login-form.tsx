@@ -46,8 +46,8 @@ export function LoginForm({stateChanger}: any) {
 
     return (
         <div className="flex justify-center items-center p-0 m-0 z-50 text-white">
-            <div className="w-[35rem] h-[40rem] backdrop-blur-lg rounded-lg border border-white/30">
-                <div className="text-6xl font-extrabold h-[10rem] flex justify-start items-center mx-[4rem] animate-fadein">Sign In</div>
+            <div className="w-[35rem] h-fit py-16 space-y-12 backdrop-blur-lg rounded-lg border border-white/30">
+                <div className="text-6xl font-extrabold flex justify-start items-center mx-[4rem] animate-fadein">Sign In</div>
                 <Form {...form}>
                     <form onSubmit={handleSubmit} className="space-y-6 px-[4rem] flex flex-col">
                         <FormField
@@ -78,7 +78,6 @@ export function LoginForm({stateChanger}: any) {
                         />
                         <Button type="submit" className="bg-[#3B82F6] text-2xl w-[10rem] h-[4rem] mx-auto cursor-pointer hover:bg-[#06B6D4]">Log In!</Button>
 
-                        <a className="mx-auto text-xl font-semibold text-[#3B82F6] cursor-pointer hover:underline">Zapomenuté heslo?</a>
                         <div className="mx-auto text-xl font-semibold cursor-default">Nemáte jěště účet? <a className="text-[#3B82F6] cursor-pointer hover:underline" onClick={() => stateChanger(false)}>Vytvořit účet?</a></div>
                     </form>
                 </Form>

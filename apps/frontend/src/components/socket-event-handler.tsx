@@ -24,11 +24,13 @@ export const SocketEventHandler = () => {
       usePartyStore.getState().setError(`Disconnected: ${reason}`);
     };
 
-    const onForcedLogout = (payload: { message: string }) => {
+    const onForcedLogout = (payload?: { message: string }) => {
       console.log("Forced logout event received:", payload);
       
+      const message = payload?.message || 'Your session has expired or is invalid. Please log in again.';
+
       // 1. Show toast
-      toast.error(payload.message, {
+      toast.error(message, {
         duration: 5000,
       });
 

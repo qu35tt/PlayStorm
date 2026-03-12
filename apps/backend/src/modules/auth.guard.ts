@@ -30,6 +30,7 @@ export class AuthGuard implements CanActivate {
             token,
             {
                 secret: this.config.getOrThrow('JWT_SECRET')
+                
             }
             );
         } catch {

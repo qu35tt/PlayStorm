@@ -29,7 +29,7 @@ export class AuthService {
 
             const payload = { sub: user.id, username: user.username, version: user.tokenVersion };
 
-            const access_token = await this.jwt.signAsync(payload, { expiresIn: "30d" });
+            const access_token = await this.jwt.signAsync(payload, { expiresIn: '60s' });
 
             const id = user.id
 
@@ -74,7 +74,7 @@ export class AuthService {
                 version: updatedUser.tokenVersion 
             };
 
-            const access_token = await this.jwt.signAsync(payload);
+            const access_token = await this.jwt.signAsync(payload, { expiresIn: '1h' });
 
             const id = updatedUser.id
 

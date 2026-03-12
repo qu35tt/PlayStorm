@@ -31,9 +31,9 @@ export const router = createBrowserRouter([
   {
     path: "/watch/:id",
     element: (
-      <>
+      <PrivateRoute>
         <VideoPlayer />
-      </>
+      </PrivateRoute>
     )
   },
 ]);

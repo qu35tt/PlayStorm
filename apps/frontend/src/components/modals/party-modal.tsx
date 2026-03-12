@@ -11,6 +11,8 @@ import { useEffect } from 'react';
 import { useSocket } from "@/context/socket-context";
 import type { PartyUser } from '@/types/socket-types';
 
+import { router } from '@/services/router';
+
 export function PartyModal() {
   const { isOpen, onClose, onOpen, type } = useModal();
   const { userCredentials } = useUser();
@@ -55,10 +57,13 @@ export function PartyModal() {
       try {
         await createParty();
         toast.success("Party byla úspěšně vytvořena!");
-      } catch(err) {
-        console.log(err);
+      } catch(err: any) {
+        console.error(err);
+        if (err.message === 'Unauthorized') {
+          router.navigate('/');
+          onClose();
+        }
       }
-      
     }
 
     function handleJoinParty() {

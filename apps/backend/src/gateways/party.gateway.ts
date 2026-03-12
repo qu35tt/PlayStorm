@@ -39,27 +39,43 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  async handleConnection(client: Socket) {
-    this.logger.log(`Client connected: ${client.id}`);
+  async checkJwtTokenExpiry(client: Socket) {
+    const token = client.handshake.headers.authorization?.split(' ')[1];
     
+    if (!token) {
+      this.logger.warn(`No token provided for socket connection: ${client.id}`);
+      client.emit('forcedLogout', { message: 'Authentication token is missing. Please log in again.' });
+      client.disconnect();
+      throw new WsException('Unauthorized');
+    }
+
     try {
-      const token = client.handshake.headers.authorization?.split(' ')[1];
-      if (token) {
-        const payload = await this.jwtService.verifyAsync(token);
-        if (payload && payload.sub) {
-          const userId = payload.sub;
-          client.data.userId = userId;
-          
-          if (!this.userSockets.has(userId)) {
-            this.userSockets.set(userId, new Set());
-            this.userSockets.get(userId)?.add(client.id);
-          }
-          
-          this.logger.log(`User ${userId} associated with socket ${client.id}`);
+      const payload = await this.jwtService.verifyAsync(token);
+      if (payload && payload.sub) {
+        const userId = payload.sub;
+        client.data.userId = userId;
+        
+        if (!this.userSockets.has(userId)) {
+          this.userSockets.set(userId, new Set());
         }
+        this.userSockets.get(userId)?.add(client.id);
+        
+        return true;
       }
     } catch (err) {
-      this.logger.warn(`Failed to authenticate socket connection: ${err.message}`);
+      this.logger.warn(`Token validation failed for socket ${client.id}: ${err.message}`);
+      client.emit('forcedLogout', { message: 'Your session has expired. Please log in again.' });
+      client.disconnect();
+      throw new WsException('Unauthorized');
+    }
+  }
+
+  async handleConnection(client: Socket) {
+    this.logger.log(`Client connected: ${client.id}`);
+    try {
+      await this.checkJwtTokenExpiry(client);
+    } catch (err) {
+      // Error already handled in checkJwtTokenExpiry
     }
   }
 
@@ -93,40 +109,16 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.log(`Forcing logout for user ${userId} on ${socketIds.size} sockets`);
       for (const socketId of socketIds) {
         this.server.to(socketId).emit('forcedLogout', {
-          message: 'User with this credentials is already logged in.'
+          message: 'User with these credentials is already logged in.'
         });
       }
-    }
-  }
-
-  private async validateToken(client: Socket) {
-    if (client.data.userId) return;
-
-    const token = client.handshake.headers.authorization?.split(' ')[1];
-    if (!token) {
-      client.disconnect();
-      throw new WsException('Unauthorized');
-    }
-
-    try {
-      const payload = await this.jwtService.verifyAsync(token);
-      client.data.userId = payload.sub;
-      
-      const userId = payload.sub;
-      if (!this.userSockets.has(userId)) {
-        this.userSockets.set(userId, new Set());
-      }
-      this.userSockets.get(userId)?.add(client.id);
-    } catch (err) {
-      client.disconnect();
-      throw new WsException('Unauthorized');
     }
   }
 
   @SubscribeMessage('createParty')
   async handlePartyCreation(@ConnectedSocket() client: Socket, @MessageBody() user: PartyUser) {
     this.logger.log(`Creating party for user: ${user.username}`);
-    await this.validateToken(client);
+    await this.checkJwtTokenExpiry(client);
     const roomId = uuidv4();
 
     client.data.user = user;
@@ -142,7 +134,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinParty')
   async handlePartyJoin(@ConnectedSocket() client: Socket, @MessageBody() data: JoinParty) {
     this.logger.log(`User ${data.username} joining party: ${data.roomId}`);
-    await this.validateToken(client);
+    await this.checkJwtTokenExpiry(client);
     const { roomId, ...userInfo } = data;
 
     if (!this.roomService.doesRoomExist(roomId)) {
@@ -171,7 +163,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('leaveParty')
   async handlePartyLeave(@ConnectedSocket() client: Socket) {
     this.logger.log(`User leaving party: ${client.id}`);
-    await this.validateToken(client);
+    await this.checkJwtTokenExpiry(client);
     const result = this.roomService.removeUserBySocketId(client.id);
     if (!result) return;
 
@@ -185,7 +177,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('startPlayback')
   async handleStartPlayback(@ConnectedSocket() client: Socket, @MessageBody() data: PlaybackData) {
     this.logger.log(`Starting playback in room: ${client.data.roomId} for video: ${data.videoId}`);
-    await this.validateToken(client);
+    await this.checkJwtTokenExpiry(client);
     let roomId = client.data.roomId;
     if (!roomId) return;
 
@@ -197,7 +189,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('playbackAction')
   async handlePlaybackAction(@ConnectedSocket() client: Socket, @MessageBody() action: any) {
     this.logger.log(`Playback action in room: ${client.data.roomId} action: ${action.action}`);
-    await this.validateToken(client);
+    await this.checkJwtTokenExpiry(client);
     const roomId = client.data.roomId;
     if (!roomId) return;
 
@@ -214,7 +206,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('syncState')
   async handleSyncState(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
-    await this.validateToken(client);
+    await this.checkJwtTokenExpiry(client);
     const roomId = client.data.roomId;
     if (!roomId) return;
 
@@ -234,7 +226,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('endPlayback') 
   async handleEndPlayback(@ConnectedSocket() client: Socket) {
     this.logger.log(`Ending playback in room: ${client.data.roomId}`);
-    await this.validateToken(client);
+    await this.checkJwtTokenExpiry(client);
     let roomId = client.data.roomId;
     if (!roomId) return;
 
